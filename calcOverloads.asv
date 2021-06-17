@@ -22,7 +22,7 @@ function [npOverloads,adjustedOverloads] = calcOverloads(load, npCapacity, time,
             
             %determine adjusted overloads
             %an adjusted overload occurs when the load is greater than the adjusted nameplate capacity OR when the necessary adjustment exceeds the maximum allowable adjustment
-            if (load(i) > Adjustment + npCapacity) || (Adjustment >= (adjustmentFactorMax/100)*npCapacity)
+            if (load(i) > Adjustment + npCapacity) || (Adjustment >= (adjusmentFactorMax/100)*npCapacity)
                 adjustedOverloads(i) = load(i) - npCapacity; %identify unacceptable overload above nameplate capacity
             end
         end
