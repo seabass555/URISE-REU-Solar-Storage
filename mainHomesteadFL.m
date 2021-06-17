@@ -73,6 +73,8 @@ xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Load with Solar generation', 'BESS Power Output', 'Load with Solar and Storage', 'Solar Generation');
 title('Net Loads and Solar, BESS Outputs');
+xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
+xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 
 %graph for overloads with BESS+solar system (also display BESS energy)
 subplot(4,1,2);
@@ -85,6 +87,8 @@ xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW/10MWh');
 legend('Overloads above Nameplate Capacity (MW)', 'Overloads above Nameplate Capacity that may result in damage (MW)', 'Energy Stored in BESS (10 MWh)');
 title('Overloads with Solar and BESS System');
+xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
+xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 
 %graph for overloads without BESS+solar or upgrade
 subplot(4,1,3);
@@ -96,6 +100,8 @@ xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Overloads above Nameplate Capacity (MW)', 'Overloads above Nameplate Capacity that may result in damage (MW)');
 title('Overloads without Solar and BESS System or Upgrade');
+xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
+xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 
 %graph for overloads with substation upgrade
 subplot(4,1,4);
@@ -107,4 +113,5 @@ xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Overloads above Nameplate Capacity (MW)', 'Overloads above Nameplate Capacity that may result in damage (MW)');
 title('Overloads with 10MW Substation Upgrade');
-
+xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
+xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
