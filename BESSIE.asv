@@ -105,7 +105,6 @@ plot(time,energyBESS./10,'b');
 xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW/10MWh');
 legend('Overloads above Nameplate Capacity (MW)', 'Overloads above Nameplate Capacity that may result in damage (MW)', 'Energy Stored in BESS (10 MWh)');
-title('Overloads with Solar and BESS System');
 
 subplot(3,1,3);
 hold on;
@@ -116,4 +115,3 @@ plot(time, adjustedOverloads2, 'r');
 xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Overloads above Nameplate Capacity (MW)', 'Overloads above Nameplate Capacity that may result in damage (MW)');
-title('Overloads without Solar and BESS System');
