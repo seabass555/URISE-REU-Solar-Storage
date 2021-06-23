@@ -67,11 +67,9 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 [npOverloadsUpgrade,adjustedOverloadsUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
 
 %calculate costs TBD...
-percLoadGrowth = 0.1;
-[costsCO2BESS,annualCO2BESS,~] = calcCosts(netLoadBESS,percLoadGrowth,arraySize,energyCapBESS,npCapacity,0,adjustedOverloadsBESS);
-[costsCO2Upgrade,annualCO2Upgrade,~] = calcCosts(load,percLoadGrowth,0,0,(npCapacity+npCapacityInc),npCapacityInc,adjustedOverloadsUpgrade);
-disp(costsCO2BESS);
-disp(costsCO2Upgrade);
+percLoadGrowth = 3;
+[netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(netLoadBESS,percLoadGrowth,arraySize,energyCapBESS,npCapacity,0,adjustedOverloadsBESS);
+[netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(load,percLoadGrowth,0,0,(npCapacity+npCapacityInc),npCapacityInc,adjustedOverloadsUpgrade);
 
 
 %% Generate graphs
@@ -146,12 +144,17 @@ disp(costsCO2Upgrade);
 
 %graph costs for CO2
 hold on;
-plot(annualCO2BESS, 'g--o');
-plot(annualCO2Upgrade, 'r--o');
-xlabel('Years');
+yyaxis left;
+plot(netCostsCO2BESS, 'g--o');
+plot(netCostsCO2Upgrade, 'r--o');
 ylabel('Tons CO2');
-legend('CO2 emissions BESS','CO2 emissions subst. upgrade');
-title('CO2 Emissions');
+yyaxis right;
+plot(netCostsUSDBESS, 'g-*');
+plot(netCostsUSDUpgrade, 'r-*');
+ylabel('US Dollars')
+xlabel('Years');
+legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
+title('Costs in Net CO2 Emissions/USD');
 
 
 
