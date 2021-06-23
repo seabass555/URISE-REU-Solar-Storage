@@ -14,7 +14,7 @@ chargeThreshold = zeros(length(time),1);
 %% calculate charge/discharge thresholds
 
 if length(time) > 168 %check for over a week of data (time in hours)
-    for i = 1:(length(time)-168) %interate through all indecies up to last week
+    for i = 1:(length(time)-168) %iterate through all indices up to last week
         %determine threshold by percentage * mean load over next week
         chargeThreshold(i) = (chargePerc/100)*mean(netLoad(i:i+168));
         dischargeThreshold(i)= (dischargePerc/100)*mean(netLoad(i:i+168));

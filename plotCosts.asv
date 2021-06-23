@@ -1,0 +1,29 @@
+function plotCosts(figNum,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS)
+%Plot solar gen, net loads, BESS power out
+%   can select year view or month view, if isYearView = 0, sets bounds of
+%   x-axis to be 2 weeks, or 336 hrs (centered on hour 4020, mid-year)
+
+figure(figNum);
+figure('Name','Cost Data')
+hold on;
+hold on;
+yyaxis left;
+plot(netCostsCO2BESS, 'g-o');
+plot(netCostsCO2Upgrade, 'k-o');
+ylabel('Tons CO2');
+yyaxis right;
+plot(netCostsUSDBESS, 'g:*');
+plot(netCostsUSDUpgrade, 'r:*');
+ylabel('US Dollars')
+xlabel('Years');
+legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
+title('Costs in CO2 Emissions and USD');
+
+xlabel('Time in hours after 12 am 1/1/20');
+ylabel('MW');
+legend('Baseline Load', 'Load w/ Solar','BESS Power Output', 'Load w/ Solar and Storage', 'Solar Generation');
+title('Net Loads and Solar, BESS Outputs');
+xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
+xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
+end
+
