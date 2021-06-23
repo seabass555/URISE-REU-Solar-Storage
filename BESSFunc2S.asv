@@ -52,7 +52,7 @@ powerOutBESS(powerOutBESS < -dischargePowerCap) = -dischargePowerCap;
 for i = 1:length(time)
     %calculate change in energy at index
     %implement charge/disch. efficiency here (line 56) <----- (could add
-    %conditions to see if charging/discharging/charged by solar/etc.)
+    %conditions to see if charg
     deltaEnergyBESS = -powerOutBESS(i) * deltaTime; %Sebastian will kick you if you don't convert to energy
     %determine energy at each index from change in energy due to power
     if i == 1 %if first index
@@ -77,7 +77,7 @@ for i = 1:length(time)
     end
     
     %energy below zero
-    %implement depth of charge limit here (line 81) <-----
+    %implement depth of charge limit here (line 80) <-----
     if energyBESS(i) < 0 %replace 0s with minimum depth of charge
         energyBESS(i) = 0;
         
