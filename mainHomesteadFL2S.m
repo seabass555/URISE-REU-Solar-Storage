@@ -75,7 +75,9 @@ percLoadGrowth = 3;
 %% Generate graphs
 
 plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1);
+title('Yearly Net Loads and Solar, BESS Outputs');
 plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0);
+title('Net Loads and Solar, BESS Outputs');
 
 plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0);
 title("Baseline Overloads");
@@ -83,6 +85,7 @@ plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0);
 title("Overloads w/ Solar and BESS");
 
 plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0);
+title('Solar, BESS Outputs');
 
 plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade);
 title("Net Costs in C02 and USD");

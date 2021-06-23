@@ -3,17 +3,17 @@ function plotCosts(figNum,costsCO2BESS,costsCO2Upgrade,costsUSDBESS,costsUSDUpgr
 
 figure(figNum);
 figure('Name','Cost Data')
-colororder({'k','b'});
+colororder({'k','g'});
 hold on;
 
 yyaxis left;
-plot(costsCO2BESS, 'g--o');
+plot(costsCO2BESS, 'b--o');
 plot(costsCO2Upgrade, 'r--o');
 ylabel('Tons CO2');
 
 yyaxis right;
-plot(costsUSDBESS, 'g:*');
-plot(costsUSDUpgrade, 'r:*');
+plot(costsUSDBESS, 'c:*');
+plot(costsUSDUpgrade, 'm:*');
 ylabel('US Dollars')
 xlabel('Years');
 

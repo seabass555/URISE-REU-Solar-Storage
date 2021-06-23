@@ -6,6 +6,7 @@ function plotSolarBESSLoad(figNum,load,netLoadSolar,netLoadBESS,solarGen,powerOu
 figure(figNum);
 figure('Name','Solar, BESS, and Load Data')
 hold on;
+
 if isYearView == 1
     axis([0 8040 -15 130]);
 else
@@ -20,7 +21,7 @@ plot(solarGen,'y');
 xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Baseline Load', 'Load w/ Solar','Load w/ Solar and Storage','BESS Power Output','Solar Generation');
-title('Net Loads and Solar, BESS Outputs');
+%title('Net Loads and Solar, BESS Outputs');
 xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
 xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 end
