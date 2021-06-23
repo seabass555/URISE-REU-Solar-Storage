@@ -74,6 +74,14 @@ percLoadGrowth = 3;
 
 %% Generate graphs
 
+figNum = 
+
+
+
+
+
+
+
 % %graph of netload with just solar, netload with BESS+solar, solar generation, BESS power out
 % %subplot(4,1,1);
 % subplot(2,1,1);
@@ -143,18 +151,18 @@ percLoadGrowth = 3;
 % xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 
 %graph costs for CO2
-hold on;
-yyaxis left;
-plot(annualCO2BESS, 'g--o');
-plot(annualCO2Upgrade, 'r--o');
-ylabel('Tons CO2');
-yyaxis right;
-plot(netCostsUSDBESS, 'g-*');
-plot(netCostsUSDUpgrade, 'r-*');
-
-xlabel('Years');
-legend('CO2 emissions BESS','CO2 emissions subst. upgrade');
-title('Costs in CO2 Emissions/USD');
+% hold on;
+% yyaxis left;
+% plot(netCostsCO2BESS, '--o');
+% plot(netCostsCO2Upgrade, 'k--o');
+% ylabel('Tons CO2');
+% yyaxis right;
+% plot(netCostsUSDBESS, 'g--*');
+% plot(netCostsUSDUpgrade, 'r--*');
+% ylabel('US Dollars')
+% xlabel('Years');
+% legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
+% title('Costs in Net CO2 Emissions/USD');
 
 
 

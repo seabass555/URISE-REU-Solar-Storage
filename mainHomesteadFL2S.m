@@ -29,7 +29,7 @@ dischargePowerCap = 15; %MW BESS discharge Power Cap
 %dischargeThreshold = 90; % load in MW when BESS will discharge
 
 %use these for BESSFunc2S:
-chargePerc = 100; %percentage of mean load to charge
+chargePerc = 90; %percentage of mean load to charge
 dischargePerc = 110; %percentage of mean load to discharge
 dischargeFactor = 50; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
@@ -73,6 +73,20 @@ percLoadGrowth = 3;
 
 
 %% Generate graphs
+
+plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1);
+plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0);
+
+plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0);
+title("Baseline Overloads");
+plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0);
+title("Overloads w/ Solar and BESS");
+
+plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0);
+
+plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade);
+title("Net Costs in C02 and USD");
+
 
 % %graph of netload with just solar, netload with BESS+solar, solar generation, BESS power out
 % %subplot(4,1,1);
@@ -143,18 +157,18 @@ percLoadGrowth = 3;
 % xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 
 %graph costs for CO2
-hold on;
-yyaxis left;
-plot(netCostsCO2BESS, 'g--o');
-plot(netCostsCO2Upgrade, 'r--o');
-ylabel('Tons CO2');
-yyaxis right;
-plot(netCostsUSDBESS, 'g-*');
-plot(netCostsUSDUpgrade, 'r-*');
-ylabel('US Dollars')
-xlabel('Years');
-legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
-title('Costs in Net CO2 Emissions/USD');
+% hold on;
+% yyaxis left;
+% plot(netCostsCO2BESS, '--o');
+% plot(netCostsCO2Upgrade, 'k--o');
+% ylabel('Tons CO2');
+% yyaxis right;
+% plot(netCostsUSDBESS, 'g--*');
+% plot(netCostsUSDUpgrade, 'r--*');
+% ylabel('US Dollars')
+% xlabel('Years');
+% legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
+% title('Costs in Net CO2 Emissions/USD');
 
 
 
