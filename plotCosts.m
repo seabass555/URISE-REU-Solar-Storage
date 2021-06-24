@@ -1,23 +1,33 @@
-function plotCosts(figNum,costsCO2BESS,costsCO2Upgrade,costsUSDBESS,costsUSDUpgrade)
+function plotCosts(figNum,costsCO2BESS,costsCO2Upgrade,costsUSDBESS,costsUSDUpgrade,title1Text,title2Text)
 %Plot costs in CO2 and USD over years
 
 figure(figNum);
 figure('Name','Cost Data')
-colororder({'k','g'});
+%colororder({'k','b'});
+
+%yyaxis left;
+subplot(2,1,1);
 hold on;
-
-yyaxis left;
-plot(costsCO2BESS, 'b--o');
+axis([0 30 0 2E7])
+plot(costsCO2BESS, 'g--o');
 plot(costsCO2Upgrade, 'r--o');
+
 ylabel('Tons CO2');
-
-yyaxis right;
-plot(costsUSDBESS, 'c:*');
-plot(costsUSDUpgrade, 'm:*');
-ylabel('US Dollars')
 xlabel('Years');
+legend('CO2 emissions BESS','CO2 emissions subst. upgrade','Location','northwest');
+title(title1Text);
 
-legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
-%title('Costs in CO2 Emissions and USD');
+%yyaxis right;
+subplot(2,1,2);
+hold on;
+axis([0 30 0 5E8])
+plot(costsUSDBESS, 'g:*');
+plot(costsUSDUpgrade, 'r:*');
+
+ylabel('US Dollars');
+xlabel('Years');
+legend('USD costs BESS','USD costs subst. upgrade','Location','northwest');
+title(title2Text);
+
 end
 

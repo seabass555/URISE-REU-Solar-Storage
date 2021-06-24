@@ -1,4 +1,4 @@
-function plotBESSData(figNum,netLoadBESS,powerOutBESS,energyBESS,isYearView)
+function plotBESSData(figNum,netLoadBESS,powerOutBESS,energyBESS,isYearView,titleText)
 %Plot data pertaining to BESS operation
 %   can select year view or month view, if isYearView = 0, sets bounds of
 %   x-axis to be 2 weeks, or 336 hrs (centered on hour 4020, mid-year)
@@ -35,7 +35,7 @@ end
 
 xlabel('Time in hours after 12 am 1/1/20');
 legend('Load w/ Solar and BESS','BESS Power Output', 'Energy Stored in BESS');
-%title('BESS Power, Energy, and Net Load');
+title(titleText);
 xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
 xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 end
