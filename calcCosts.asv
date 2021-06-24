@@ -32,10 +32,10 @@ yearsPerHardwRep = 10; %numbers of years until replacement of electronics is nee
 yearsPerBattRep = 10;
 
 %tons of CO2 emissions due to generation of electricity that's non-solar
-emissionsPerMWh = 0.5; %EPA regulation for natural gas emission standards
+emissionsPerMWh = 0.5;
 
 %Costs per MWh overload non-tolerable by substation (USD)
-costPerMWhOverloadUSD = 100+36.66+250; %arbitrary
+costPerMWhOverloadUSD = 10000;
 
 %time scale for calculations
 yearsTot = 30;
@@ -165,7 +165,7 @@ for i = 2:yearsTot
     end
     %determine if battery replacement
     if mod(i,yearsPerBattRep) == 0
-         annualCostsUSD(i) = annualCostsUSD(i) + (instCostStoragePerMWhUSD*sizeBESSMWh)*0.20; %use slope of BESS cost function w/out its y-intercept, assumes 20% battery rep.
+         annualCostsUSD(i) = annualCostsUSD(i) + instCostStoragePerMWhUSD*sizeBESSMWh; %use slope of BESS cost function w/out its y-intercept
     end
     %sum net costs
     netCostsUSD(i) = netCostsUSD(i-1)+annualCostsUSD(i);

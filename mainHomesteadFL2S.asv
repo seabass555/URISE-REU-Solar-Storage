@@ -67,27 +67,22 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 [npOverloadsUpgrade,adjustedOverloadsUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
 
 %calculate costs TBD...
-percLoadGrowth = 3;
+percLoadGrowth = 5;
 [netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(netLoadBESS,percLoadGrowth,arraySize,energyCapBESS,npCapacity,0,adjustedOverloadsBESS);
 [netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(load,percLoadGrowth,0,0,(npCapacity+npCapacityInc),npCapacityInc,adjustedOverloadsUpgrade);
 
 
 %% Generate graphs
 
-plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1);
-title('Yearly Net Loads and Solar, BESS Outputs');
-plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0);
-title('Net Loads and Solar, BESS Outputs');
+% plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Yearly Net Loads and Solar, BESS Outputs');
+% plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
+%
+% plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
+% plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
+% 
+% plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
 
-plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0);
-title("Baseline Overloads");
-plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0);
-title("Overloads w/ Solar and BESS");
-
-plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0);
-title('Solar, BESS Outputs');
-
-plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade);
+plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,"Net Costs in C02);
 title("Net Costs in C02 and USD");
 
 
