@@ -4,13 +4,13 @@ close all;
 clear;
 
 %import data
-input = readmatrix('WA2020Solarand.csv');
+input = readmatrix('MT2020SolarandDemand.csv');
 input = input(1:end-1,:); %remove totals (last row)
 
 
 %% VARIABLE ASSIGNMENTS
 
-load = input(:,5); %5th column for load data in MW
+load = input(:,6); %6th column for load data in MW
 solar1MW = input(:,9); %solar generation data for 1MW array
 
 timeMat = input(:,1:3); %maxtrix data of the time
