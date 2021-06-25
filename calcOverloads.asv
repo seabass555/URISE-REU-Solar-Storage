@@ -18,7 +18,7 @@ function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,tim
     %initalize
     durationOverloads = zeros(numOverloads,1);
     intensityOverloads = zeros(numOverloads,1);
-    timestampOverloads = zeros(numOverloads,1);
+    timestampOverloads = zeros(
     
     nOverload = 0; %this will be the index for durationOverloads/intensityOverloads
     
@@ -36,10 +36,8 @@ function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,tim
             
             %update intensity of this overload (assuming load is higher)
             %--will convert from load to capacity factor after loop
-            %also set timestamp
             if load(i) > intensityOverloads(nOverload)
                 intensityOverloads(nOverload) = load(i);
-                timestampOverloads(nOverload) = i; %index of loop is the hour
             end
             
             %calculate adjusted overloads
@@ -64,11 +62,11 @@ function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,tim
     intensityOverloads = (intensityOverloads./npCapacity).*100; %as percent
     
     %debug
-%     disp("total number of overloads found to be: ");
-%     disp(numOverloads);
-%     disp("duration of overloads:");
-%     disp(durationOverloads);
-%     disp("intensity of overloads:");
-%     disp(intensityOverloads);
+    disp("total number of overloads found to be: ");
+    disp(numOverloads);
+    disp("duration of overloads:");
+    disp(durationOverloads);
+    disp("intensity of overloads:");
+    disp(intensityOverloads);
     
 end
