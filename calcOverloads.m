@@ -1,4 +1,4 @@
-function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,timestampOverloads] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor)
+function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,timestampOverloads,isDamaging] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor)
     %This code is designed to work only with time in hour increments
     %first, calculate overloads above nameplate capacity = npoverloads
     %adjustmentFactor and adjustmentFactorMax must be in units of percent
@@ -62,6 +62,24 @@ function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,tim
     
     %convert from load to capacity factor for intensityOverloads
     intensityOverloads = (intensityOverloads./npCapacity).*100; %as percent
+    
+    %determine if the overloads cause damage according to DTE specs.
+    isDamaging = zeros(numOverloads,1);
+    for i = 1:numOverloads
+        if intensityOverloads(i) > 235
+            isDamaging(i) = 1;
+        elseif intensityOverloads(i) > 160 && durationOverloads(i) > 1
+            isDamaging(i) = 1;
+        elseif intensityOverloads(i) > 140 && durationOverloads(i) > 2
+            isDamaging(i) = 1;
+        elseif intensityOverloads(i) > 130 && durationOverloads(i) > 4
+            isDamaging(i) = 1;
+        elseif intensityOverloads(i) > 110 && durationOverloads(i) > 10
+            isDamaging(i) = 1;
+        elseif intensityOverloads(i) > 100 && durationOverloads(i) > 16
+            isDamaging(i) = 1;
+        end
+    end
     
     %debug
 %     disp("total number of overloads found to be: ");

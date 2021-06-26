@@ -58,10 +58,10 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 
 %calculate overloads, both above nameplate rating and damaging
 %overload for load without solar+BESS and no substation upgrade
-[npOverloadsBaseline,adjustedOverloadsBaseline] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsBaseline,adjustedOverloadsBaseline,durationOLBase,intensityOverloadBase,timeOverloadBase,isDamagingBase] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
 
 %overloads for load with solar+BESS
-[npOverloadsBESS,adjustedOverloadsBESS,durationOLBESS,intensityOLBESS,timeOLBESS] = calcOverloads(netLoadBESS, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsBESS,adjustedOverloadsBESS,durationOLBESS,intensityOverloadBESS,timeOverloadBESS,isDamagingBESS] = calcOverloads(netLoadBESS, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
 
 %overloads for load with w/out solar+BESS but with potential upgrade
 [npOverloadsUpgrade,adjustedOverloadsUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
@@ -77,20 +77,29 @@ percLoadGrowth = 1;
 plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Yearly Net Loads and Solar, BESS Outputs');
 plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
 
-plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
-plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
+%plot overloads (original plot function)
+%plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
+%plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
+
+%2nd overload plot function
+plotOverloads2(3,load,npCapacity,npOverloadsBaseline,timeOverloadBase,isDamagingBase,0,'Baseline Overloads');
+plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamagingBESS,0,'Overloads w/ Solar and BESS');
 
 plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
-
+ 
 plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
 
-%Plot overload data
+
+
+%Test to plot new overload data
 % figure(8);
 % subplot(2,1,1);
 % scatter(timeOLBESS,durationOLBESS);
 % title("Duration of Overloads in hrs vs. Time of Year");
 % subplot(2,1,2);
-% scatter(timeOLBESS,intensityOLBESS);
+% hold on
+% scatter(durationOLBESS,intensityOLBESS);
+% scatter(durationOLBESS,intensityOLBESS.*isDamagingBESS.*npCapacity,'r');
 % title("Intensity of Overloads vs. Time of Year");
 % ylabel("Percent Capacity Factor");
 
