@@ -31,16 +31,20 @@ function [npOverloads,adjustedOverloads,durationOverloads,intensityOverloads,tim
             if (i == 1 || npOverloads(i-1) == 0) %i.e. first hour of this overload
                 nOverload = nOverload + 1; %increment overload index (for first overload, this will set to index 1)
             end
-            %update hours for this overload
-            durationOverloads(nOverload) = durationOverloads(nOverload) + 1;
-            
-            %update intensity of this overload (assuming load is higher)
-            %--will convert from load to capacity factor after loop
-            %also set timestamp
-            if load(i) > intensityOverloads(nOverload)
-                intensityOverloads(nOverload) = load(i);
-                timestampOverloads(nOverload) = i; %index of loop is the hour
+           
+            if nOverload > 0
+                %update hours for this overload
+                durationOverloads(nOverload) = durationOverloads(nOverload) + 1;
+                
+                %update intensity of this overload (assuming load is higher)
+                %--will convert from load to capacity factor after loop
+                %also set timestamp
+                if load(i) > intensityOverloads(nOverload)
+                    intensityOverloads(nOverload) = load(i);
+                    timestampOverloads(nOverload) = i; %index of loop is the hour
+                end
             end
+            
             
             %calculate adjusted overloads
             if i < 24 %within first 24 hours

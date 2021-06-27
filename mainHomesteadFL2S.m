@@ -29,9 +29,9 @@ dischargePowerCap = 15; %MW BESS discharge Power Cap
 % dischargeThreshold = 90; % load in MW when BESS will discharge
 
 %use these for BESSFunc2S:
-chargePerc = 100; %percentage of mean load to charge
-dischargePerc = 110; %percentage of mean load to discharge
-dischargeFactor = 50; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
+chargePerc = 70; %percentage of mean load to charge
+dischargePerc = 130; %percentage of mean load to discharge
+dischargeFactor = 90; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
 
 arraySize = 40; % capacity of solar array in MW
@@ -48,7 +48,7 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 
 
 %calculate load-with-solar and solar generation
-[netLoadSolar,solarGen] = calcLoadWithSolar(load,solar1MW,arraySize);
+[netLoadSolar,solarGen,energyLoad,energySolar] = calcLoadWithSolar(load,solar1MW,arraySize);
 
 %calculate load with BESS, Energy in BESS, Power out of BESS
 %For BESSFunc original:
@@ -61,15 +61,17 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 [npOverloadsBaseline,adjustedOverloadsBaseline,durationOLBase,intensityOverloadBase,timeOverloadBase,isDamagingBase] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
 
 %overloads for load with solar+BESS
-[npOverloadsBESS,adjustedOverloadsBESS,durationOLBESS,intensityOverloadBESS,timeOverloadBESS,isDamagingBESS] = calcOverloads(netLoadBESS, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsBESS,adjustedOverloadsBESS,durationOverloadBESS,intensityOverloadBESS,timeOverloadBESS,isDamagingBESS] = calcOverloads(netLoadBESS, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
 
 %overloads for load with w/out solar+BESS but with potential upgrade
-[npOverloadsUpgrade,adjustedOverloadsUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsUpgrade,adjustedOverloadsUpgrade,durationOverloadUpgrade,intensityOverloadUpgrade,timeOverloadUpgrade,isDamagingUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
 
 %calculate costs TBD...
 percLoadGrowth = 1;
-[netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(netLoadBESS,percLoadGrowth,arraySize,energyCapBESS,npCapacity,0,adjustedOverloadsBESS);
-[netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(load,percLoadGrowth,0,0,(npCapacity+npCapacityInc),npCapacityInc,adjustedOverloadsUpgrade);
+percSolarDeg = 5;
+%                                                     current input parameters: energyLoad,energySolar,percLoadGrowth,percSolarDeg,sizeSolarMW,sizeBESSMWh,substRatingMW,substUpgradeMW,durationOverloads,isDamaging
+[netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(energyLoad,energySolar,percLoadGrowth,percSolarDeg,arraySize,energyCapBESS,npCapacity,0,durationOverloadBESS,isDamagingBESS);
+[netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(energyLoad,0,percLoadGrowth,0,0,0,(npCapacity+npCapacityInc),npCapacityInc,durationOverloadUpgrade,isDamagingUpgrade);
 
 
 %% Generate graphs
