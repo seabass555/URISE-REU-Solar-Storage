@@ -89,8 +89,8 @@ plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamag
 
 plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
  
-plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
-
+plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCostsUSDBESS,annualCostsUSDUpgrade,'Annual Costs in C02','Annual Costs in USD');
+plotCosts(7,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
 
 
 %Test to plot new overload data

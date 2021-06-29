@@ -23,8 +23,8 @@ annualMaintaincePerMWSubstCO2 = 2.5; %annual co2 costs per MW of substation for 
 
 
 %power electronics replacement costs for solar and storage (CO2, USD)
-%costHardwRepUSD = 10.135E6; %Uses mean cost of BESS function and solar function with capacity=0, USD costs for upgrading electronics for solar-storage
-costHardwRepUSD = 7.4E6/100; %Used NREL cost benchmark for 100MW-240MWh solar+BESS instalation, divided by 100
+costHardwRepUSD = 10.135E6; %Uses mean cost of BESS function and solar function with capacity=0, USD costs for upgrading electronics for solar-storage
+%costHardwRepUSD = 7.4E6/100; %Used NREL cost benchmark for 100MW-240MWh solar+BESS instalation, divided by 100
 costHardwRepPerMWCO2 = 3; %tons of CO2 costs for upgrade
 yearsPerHardwRep = 10; %numbers of years until replacement of electronics is needed
 %ALSO replacing batteries--future note: could add an additional input param. for battery
@@ -90,11 +90,15 @@ annualNetEnergy = annualEnergyDemand - annualEnergySolar; %determine net energy 
 % % disp(annualEnergy);
 % % pause(2.5);
 
-%calculate annual emissions from power generation
-annualLoadCO2 = zeros(yearsTot,1);
-annualLoadCO2(1) = annualNetEnergy(1)*emissionsPerMWh; %for year 1
-%determine for all other years based on proportionality to net energy
-annualLoadCO2 = annualLoadCO2(1).*(annualNetEnergy./annualNetEnergy(1));
+%%%calculate annual emissions from power generation -- old
+% annualLoadCO2 = zeros(yearsTot,1);
+% annualLoadCO2(1) = annualNetEnergy(1)*emissionsPerMWh; %for year 1
+% %determine for all other years based on proportionality to net energy
+% annualLoadCO2 = annualLoadCO2(1).*(annualNetEnergy./annualNetEnergy(1));
+
+%%%Determine annual emission reduction from the power generation of solar
+annualLoadCO2 = -annualEnergySolar*emissionsPerMWh;
+
 
 % disp("annual load CO2: ");
 % disp(length(annualLoadCO2));
@@ -212,7 +216,7 @@ for i = 2:yearsTot
     end
     %determine if battery replacement
     if mod(i,yearsPerBattRep) == 0
-         annualCostsUSD(i) = annualCostsUSD(i) + (instCostStoragePerMWhUSD*sizeBESSMWh)*0.20; %use slope of BESS cost function w/out its y-intercept, assumes 20% battery rep.
+         annualCostsUSD(i) = annualCostsUSD(i) + (instCostStoragePerMWhUSD*sizeBESSMWh); %use slope of BESS cost function w/out its y-intercept, assumes 20% battery rep.
     end
     %sum net costs
     netCostsUSD(i) = netCostsUSD(i-1)+annualCostsUSD(i);

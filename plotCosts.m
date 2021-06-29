@@ -8,7 +8,7 @@ figure('Name','Cost Data')
 %yyaxis left;
 subplot(2,1,1);
 hold on;
-axis([0 30 0 2E7])
+%axis([0 30 -50000 50000])
 plot(costsCO2BESS, 'g--o');
 plot(costsCO2Upgrade, 'r--o');
 
@@ -20,7 +20,7 @@ title(title1Text);
 %yyaxis right;
 subplot(2,1,2);
 hold on;
-axis([0 30 0 5E8])
+%axis([0 30 0 5E8])
 plot(costsUSDBESS, 'g:*');
 plot(costsUSDUpgrade, 'r:*');
 

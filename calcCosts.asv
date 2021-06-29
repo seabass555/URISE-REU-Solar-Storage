@@ -23,8 +23,8 @@ annualMaintaincePerMWSubstCO2 = 2.5; %annual co2 costs per MW of substation for 
 
 
 %power electronics replacement costs for solar and storage (CO2, USD)
-%costHardwRepUSD = 10.135E6; %Uses mean cost of BESS function and solar function with capacity=0, USD costs for upgrading electronics for solar-storage
-costHardwRepUSD = 7.4E6/100; %Used NREL cost benchmark for 100MW-240MWh solar+BESS instalation, divided by 100
+costHardwRepUSD = 10.135E6; %Uses mean cost of BESS function and solar function with capacity=0, USD costs for upgrading electronics for solar-storage
+%costHardwRepUSD = 7.4E6/100; %Used NREL cost benchmark for 100MW-240MWh solar+BESS instalation, divided by 100
 costHardwRepPerMWCO2 = 3; %tons of CO2 costs for upgrade
 yearsPerHardwRep = 10; %numbers of years until replacement of electronics is needed
 %ALSO replacing batteries--future note: could add an additional input param. for battery
@@ -59,6 +59,10 @@ end
 
 annualNetEnergy = annualEnergyDemand - annualEnergySolar; %determine net energy as vector
 
+% disp("annual Net energy");
+% disp(length(annualNetEnergy));
+% disp(annualNetEnergy);
+
 %% Emissions costs
 
 %%%Old method for determining emissions by calculating net energy from an
@@ -86,13 +90,16 @@ annualNetEnergy = annualEnergyDemand - annualEnergySolar; %determine net energy 
 % % disp(annualEnergy);
 % % pause(2.5);
 
-%calculate annual emissions from power generation
-annualLoadCO2 = zeros(yearsTot,1);
-annualLoadCO2(1) = annualNetEnergy(1)*emissionsPerMWh; %for year 1
-%determine for all other years based on proportionality to net energy
-annualLoadCO2 = annualLoadCO2(1).*(annualNetEnergy./annualNetEnergy(1));
+% %calculate annual emissions from power generation
+% annualLoadCO2 = zeros(yearsTot,1);
+% annualLoadCO2(1) = annualNetEnergy(1)*emissionsPerMWh; %for year 1
+% %determine for all other years based on proportionality to net energy
+% annualLoadCO2 = annualLoadCO2(1).*(annualNetEnergy./annualNetEnergy(1));
+
+
 
 % disp("annual load CO2: ");
+% disp(length(annualLoadCO2));
 % disp(annualLoadCO2);
 % pause(2.5);
 
@@ -108,9 +115,13 @@ instCostBESSCO2 = instCostStoragePerMWhCO2*sizeBESSMWh;
 instCostSubstCO2 = instCostSubstPerMWCO2*substUpgradeMW;
 
 %determine for year 1
-netCostsCO2(1)=annualLoadCO2(1)+annualMaintainceSolarCO2+annualMaintainceBESSCO2+annualMaintainceSubstCO2+instCostSolarCO2+instCostBESSCO2+instCostSubstCO2;
-% disp("costsCO2 index 1: ");
-% disp(costsCO2);
+% disp(netCostsCO2);
+% disp(length(netCostsCO2));
+% disp("annual load CO2 index 1:");
+% disp(annualLoadCO2(1));
+netCostsCO2(1) = annualLoadCO2(1)+annualMaintainceSolarCO2+annualMaintainceBESSCO2+annualMaintainceSubstCO2+instCostSolarCO2+instCostBESSCO2+instCostSubstCO2;
+% disp("net costsCO2 index 1: ");
+% disp(netCostsCO2);
 % pause(2.5);
 annualCostsCO2(1) = netCostsCO2(1);
 
@@ -180,7 +191,7 @@ costsBaselineOverloads = sum(isDamaging,'omitnan')*costBaselinePerOverloadUSD;
 %determine year 1 overload costs
 costsOverloads(1) = totalDurationOverloads*costPerHourOverloadUSD+costsBaselineOverloads;
 
-%determine overload costs for the remainder of the years us
+%determine overload costs for the remainder of the years using proportion
 costsOverloads = costsOverloads(1).*(annualNetEnergy./annualNetEnergy(1));
 %%%Replaced above with vectorized proportion to net energy consumption
 % for i = 2:yearsTot %determine for the remained of years using load growth
@@ -203,7 +214,7 @@ for i = 2:yearsTot
     end
     %determine if battery replacement
     if mod(i,yearsPerBattRep) == 0
-         annualCostsUSD(i) = annualCostsUSD(i) + (instCostStoragePerMWhUSD*sizeBESSMWh)*0.20; %use slope of BESS cost function w/out its y-intercept, assumes 20% battery rep.
+         annualCostsUSD(i) = annualCostsUSD(i) + (instCostStoragePerMWhUSD*sizeBESSMWh); %use slope of BESS cost function w/out its y-intercept, assumes 20% battery rep.
     end
     %sum net costs
     netCostsUSD(i) = netCostsUSD(i-1)+annualCostsUSD(i);
