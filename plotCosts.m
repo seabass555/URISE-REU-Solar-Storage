@@ -21,10 +21,10 @@ title(title1Text);
 subplot(2,1,2);
 hold on;
 %axis([0 30 0 5E8])
-plot(costsUSDBESS, 'g:*');
-plot(costsUSDUpgrade, 'r:*');
+plot(costsUSDBESS./1000000, 'g:*');
+plot(costsUSDUpgrade./1000000, 'r:*');
 
-ylabel('US Dollars');
+ylabel('Million USD');
 xlabel('Years');
 legend('USD costs BESS','USD costs subst. upgrade','Location','northwest');
 title(title2Text);
