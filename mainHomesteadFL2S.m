@@ -25,22 +25,22 @@ chargePowerCap = 15; %MW BESS charge Power Cap
 dischargePowerCap = 15; %MW BESS discharge Power Cap
 
 %use these for BESSFunc original:
-%chargeThreshold = 65; % load in MW at when BESS will charge
-%dischargeThreshold = 90; % load in MW when BESS will discharge
+% chargeThreshold = 65; % load in MW at when BESS will charge
+% dischargeThreshold = 90; % load in MW when BESS will discharge
 
 %use these for BESSFunc2S:
-chargePerc = 90; %percentage of mean load to charge
-dischargePerc = 110; %percentage of mean load to discharge
-dischargeFactor = 50; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
+chargePerc = 70; %percentage of mean load to charge
+dischargePerc = 130; %percentage of mean load to discharge
+dischargeFactor = 90; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
 
-arraySize = 40; % capacity of solar array in MW
+arraySize = 200; % capacity of solar array in MW
 
 %substation overload variables
-npCapacity = 90; %MW - nameplate rating of the substation transformer
+npCapacity = 75; %MW - nameplate rating of the substation transformer
 adjustmentFactorMax = 25; %percent maximum tolerable increase above substation rating
 adjustmentFactor = 0.4; %percent tolerable increase above rating for every percent the 24hr mean capacity factor is below 100%
-npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate capacity
+npCapacityInc = 75; %for potential substation upgrade - MW increase in nameplate capacity
 
 
 
@@ -48,28 +48,46 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 
 
 %calculate load-with-solar and solar generation
-[netLoadSolar,solarGen] = calcLoadWithSolar(load,solar1MW,arraySize);
+[netLoadSolar,solarGen,energyLoad,energySolar] = calcLoadWithSolar(load,solar1MW,arraySize);
 
 %calculate load with BESS, Energy in BESS, Power out of BESS
-%For BESSFunc original
+%For BESSFunc original:
 %[powerOutBESS,energyBESS,netLoadBESS] = BESSFunc(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargeThreshold,dischargeThreshold);
 %For BESSFunc2S:
 [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc2S(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity);
 
 %calculate overloads, both above nameplate rating and damaging
 %overload for load without solar+BESS and no substation upgrade
-[npOverloadsBaseline,adjustedOverloadsBaseline] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsBaseline,adjustedOverloadsBaseline,durationOLBase,intensityOverloadBase,timeOverloadBase,isDamagingBase] = calcOverloads(load, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
 
 %overloads for load with solar+BESS
-[npOverloadsBESS,adjustedOverloadsBESS] = calcOverloads(netLoadBESS, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsBESS,adjustedOverloadsBESS,durationOverloadBESS,intensityOverloadBESS,timeOverloadBESS,isDamagingBESS] = calcOverloads(netLoadBESS, npCapacity, time, adjustmentFactorMax, adjustmentFactor);
 
 %overloads for load with w/out solar+BESS but with potential upgrade
-[npOverloadsUpgrade,adjustedOverloadsUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
+[npOverloadsUpgrade,adjustedOverloadsUpgrade,durationOverloadUpgrade,intensityOverloadUpgrade,timeOverloadUpgrade,isDamagingUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
 
-%calculate costs TBD...
-percLoadGrowth = 5;
-[netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(netLoadBESS,percLoadGrowth,arraySize,energyCapBESS,npCapacity,0,adjustedOverloadsBESS);
-[netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(load,percLoadGrowth,0,0,(npCapacity+npCapacityInc),npCapacityInc,adjustedOverloadsUpgrade);
+%calculate costs
+percLoadGrowth = 1;
+percSolarDeg = 0.6;
+%add CO2 price (w/ also option to select use)
+%add option to allow user to have limited overloads
+priceCarbon = 100;
+isBlackoutAtNP = 1;
+
+%for later use: also could have option for certain benefits of storage,
+%such as selling power during peak
+
+%old cost function
+% %current input parameters: energyLoad,energySolar,percLoadGrowth,percSolarDeg,sizeSolarMW,sizeBESSMWh,substRatingMW,substUpgradeMW,durationOverloads,isDamaging
+% [netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(energyLoad,energySolar,percLoadGrowth,percSolarDeg,arraySize,energyCapBESS,npCapacity,0,durationOverloadBESS,isDamagingBESS);
+% [netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(energyLoad,0,percLoadGrowth,0,0,0,(npCapacity+npCapacityInc),npCapacityInc,durationOverloadUpgrade,isDamagingUpgrade);
+
+%cost function 2
+%input parameters:                                                 energyLoad,energySolar,percLoadGrowth,percSolarDeg,sizeSolarMW,sizeBESSMWh,substRatingMW,substUpgradeMW,durationOverloads,isDamaging,durationOverloadsOrig,isDamagingOrig,priceCarbon,isBlackoutAtNP
+[netCostsCO2BESS,annualCO2BESS,NPV_BESS,annualCB_BESS] = calcCosts2(energyLoad,energySolar,percLoadGrowth,percSolarDeg,arraySize,energyCapBESS,npCapacity,0,durationOverloadBESS,isDamagingBESS,durationOLBase,isDamagingBase,priceCarbon,isBlackoutAtNP);
+[netCostsCO2Upgrade,annualCO2Upgrade,NPV_Upgrade,annualCB_Upgrade] = calcCosts2(energyLoad,0,percLoadGrowth,0,0,0,(npCapacity+npCapacityInc),npCapacityInc,durationOverloadUpgrade,isDamagingUpgrade,durationOLBase,isDamagingBase,priceCarbon,isBlackoutAtNP);
+
+
 
 
 %% Generate graphs
@@ -77,13 +95,35 @@ percLoadGrowth = 5;
 % plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Yearly Net Loads and Solar, BESS Outputs');
 % plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
 % 
-% plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
-% plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
+% %plot overloads (original plot function)
+% %plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
+% %plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
+% 
+% %2nd overload plot function
+% plotOverloads2(3,load,npCapacity,npOverloadsBaseline,timeOverloadBase,isDamagingBase,0,'Baseline Overloads');
+% plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamagingBESS,0,'Overloads w/ Solar and BESS');
 % 
 % plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
+ 
+plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCB_BESS,annualCB_Upgrade,'Annual Costs in C02','Annual Benefits-Costs in USD');
+plotCosts(7,netCostsCO2BESS,netCostsCO2Upgrade,NPV_BESS,NPV_Upgrade,'Net Costs in C02','Net Present Value in USD');
 
-plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
+%plot costs for old cost function
+%plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCostsUSDBESS,annualCostsUSDUpgrade,'Annual Costs in C02','Annual Costs in USD');
+%plotCosts(7,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
 
+
+%Test to plot new overload data
+% figure(8);
+% subplot(2,1,1);
+% scatter(timeOLBESS,durationOLBESS);
+% title("Duration of Overloads in hrs vs. Time of Year");
+% subplot(2,1,2);
+% hold on
+% scatter(durationOLBESS,intensityOLBESS);
+% scatter(durationOLBESS,intensityOLBESS.*isDamagingBESS.*npCapacity,'r');
+% title("Intensity of Overloads vs. Time of Year");
+% ylabel("Percent Capacity Factor");
 
 % %graph of netload with just solar, netload with BESS+solar, solar generation, BESS power out
 % %subplot(4,1,1);

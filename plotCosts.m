@@ -8,7 +8,7 @@ figure('Name','Cost Data')
 %yyaxis left;
 subplot(2,1,1);
 hold on;
-axis([0 30 0 2E7])
+%axis([0 30 -50000 50000])
 plot(costsCO2BESS, 'g--o');
 plot(costsCO2Upgrade, 'r--o');
 
@@ -20,11 +20,11 @@ title(title1Text);
 %yyaxis right;
 subplot(2,1,2);
 hold on;
-axis([0 30 0 5E8])
-plot(costsUSDBESS, 'g:*');
-plot(costsUSDUpgrade, 'r:*');
+%axis([0 30 0 5E8])
+plot(costsUSDBESS./1000000, 'g:*');
+plot(costsUSDUpgrade./1000000, 'r:*');
 
-ylabel('US Dollars');
+ylabel('Million USD');
 xlabel('Years');
 legend('USD costs BESS','USD costs subst. upgrade','Location','northwest');
 title(title2Text);
