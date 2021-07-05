@@ -10,7 +10,7 @@ function [netCostsCO2, annualCostsCO2, NPV_USD, annualCostBenefitUSD] = calcCost
 %instalation costs (USD, C02)
 instCostSolarPerMWUSD = 994135;%Cost = 994135*capacity+2.77E6 USD costs per MW for solar instalation
 instCostStoragePerMWhUSD = 267678;%Cost = 267678*capacity+1.75E7 USD costs per MWh for BESS instalation
-instCostSubstPerMWUSD = 60000; %USD costs per MW for substation upgrade
+instCostSubstPerMWUSD = 120000; %USD costs per MW for substation upgrade
 instCostSolarPerMWCO2 = 3.97; %tons of CO2 costs per MW for solar instalation
 instCostStoragePerMWhCO2 = 8.69; %tons of CO2 costs per MWh for BESS instalation
 instCostSubstPerMWCO2 = 42.0; %tons of CO2 costs per MW for substation upgrade
@@ -18,7 +18,7 @@ instCostSubstPerMWCO2 = 42.0; %tons of CO2 costs per MW for substation upgrade
 %annual maintaince costs (USD, C02)
 annualMaintaincePerMWSolarUSD = 17460; %From NREL cost benchmark for kWdc of solar *1000, annual USD costs per MW of solar for maintaince
 annualMaintaincePerMWhStorageUSD = 1000; %annual USD costs per MW of BESS for maintaince
-annualMaintaincePerMWSubstUSD = 10000; %annual USD costs per MW of substation for maintaince
+annualMaintaincePerMWSubstUSD = 20000; %annual USD costs per MW of substation for maintaince
 annualMaintaincePerMWSolarCO2 = 15; %annual co2 costs per MW of solar for maintaince
 annualMaintaincePerMWhStorageCO2 = 15; %annual co2 costs per MW of BESS for maintaince
 annualMaintaincePerMWSubstCO2 = 20; %annual co2 costs per MW of substation for maintaince
@@ -35,7 +35,8 @@ yearsPerBattRep = 10;
 
 
 %tons of CO2 emissions due to generation of electricity that's non-solar
-emissionsPerMWh = 0.5; %EPA regulation for natural gas emission standards
+%emissionsPerMWh = 0.5; %EPA regulation for natural gas emission standards
+emissionsPerMWh = 0.1996; %EIA emission data for natural gas, converted from lb-CO2/Mbtu
 
 %Overload costs
 %costPerMWhOverloadUSD = 100+36.66+250; %Costs per MWh overload non-tolerable by substation (USD). Arbitrary, now unused
@@ -43,7 +44,7 @@ costPerHourOverloadUSD = 5000; %Currently arbitrary, cost for every hour a non-t
 costBaselinePerOverloadUSD = 1000; %currently arbitrary, baseline cost of a damaging overload
 
 %revenue from solar MWh of generation
-gainsPerMWhSolar = 23.11; %fuel cost of NG per MWh
+gainsPerMWhSolar = 36.66; %generation cost of NG per MWh
 
 %time scale for calculations
 yearsTot = 30;

@@ -19,7 +19,7 @@ time = time'; %time in hours for dataset
 deltaTime = 1; % time increment IN HOURS
 
 %BESS variables
-energyCapBESS = 100; % MWh maximum capacity
+energyCapBESS = 300; % MWh maximum capacity
 initialEnergyBESS = 40; % MWh initial capacity
 chargePowerCap = 15; %MW BESS charge Power Cap
 dischargePowerCap = 15; %MW BESS discharge Power Cap
@@ -29,12 +29,12 @@ dischargePowerCap = 15; %MW BESS discharge Power Cap
 % dischargeThreshold = 90; % load in MW when BESS will discharge
 
 %use these for BESSFunc2S:
-chargePerc = 70; %percentage of mean load to charge
-dischargePerc = 130; %percentage of mean load to discharge
+chargePerc = 110; %percentage of mean load to charge
+dischargePerc = 10; %percentage of mean load to discharge
 dischargeFactor = 90; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
 
-arraySize = 100; % capacity of solar array in MW
+arraySize = 75; % capacity of solar array in MW
 
 %substation overload variables
 npCapacity = 75; %MW - nameplate rating of the substation transformer
@@ -71,7 +71,7 @@ percLoadGrowth = 1;
 percSolarDeg = 0.6;
 %add CO2 price (w/ also option to select use)
 %add option to allow user to have limited overloads
-priceCarbon = 30;
+priceCarbon = 100;
 isBlackoutAtNP = 1;
 
 %for later use: also could have option for certain benefits of storage,
@@ -104,7 +104,7 @@ isBlackoutAtNP = 1;
 % plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamagingBESS,0,'Overloads w/ Solar and BESS');
 % 
 % plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
- 
+
 plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCB_BESS,annualCB_Upgrade,'Annual Costs in C02','Annual Benefits-Costs in USD');
 plotCosts(7,netCostsCO2BESS,netCostsCO2Upgrade,NPV_BESS,NPV_Upgrade,'Net Costs in C02','Net Present Value in USD');
 
