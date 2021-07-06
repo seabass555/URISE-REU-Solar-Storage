@@ -19,8 +19,8 @@ time = time'; %time in hours for dataset
 deltaTime = 1; % time increment IN HOURS
 
 %BESS variables
-energyCapBESS = 100; % MWh maximum capacity
-initialEnergyBESS = 40; % MWh initial capacity
+energyCapBESS = 40; % MWh maximum capacity
+initialEnergyBESS = 0; % MWh initial capacity
 chargePowerCap = 15; %MW BESS charge Power Cap
 dischargePowerCap = 15; %MW BESS discharge Power Cap
 
@@ -34,7 +34,7 @@ dischargePerc = 110; %percentage of mean load to discharge
 dischargeFactor = 90; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
 
-arraySize = 40; % capacity of solar array in MW
+arraySize = 10; % capacity of solar array in MW
 
 %substation overload variables
 npCapacity = 90; %MW - nameplate rating of the substation transformer
@@ -105,8 +105,8 @@ plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamag
 
 %disp(NPV_BESS(30));
 
-%plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCB_BESS,annualCB_Upgrade,'Annual Costs in C02','Annual Benefits-Costs in USD');
-%plotCosts(7,netCostsCO2BESS,netCostsCO2Upgrade,NPV_BESS,NPV_Upgrade,'Net Costs in C02','Net Present Value in USD');
+plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCB_BESS,annualCB_Upgrade,'Annual Costs in C02','Annual Benefits-Costs in USD');
+plotCosts(7,netCostsCO2BESS,netCostsCO2Upgrade,NPV_BESS,NPV_Upgrade,'Net Costs in C02','Net Present Value in USD');
 
 %plot costs for old cost function
 %plotCosts(6,annualCO2BESS,annualCO2Upgrade,annualCostsUSDBESS,annualCostsUSDUpgrade,'Annual Costs in C02','Annual Costs in USD');
