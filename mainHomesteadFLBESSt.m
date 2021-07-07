@@ -15,6 +15,7 @@ solar1MW = input(:,9); %solar generation data for 1MW array
 
 timeMat = input(:,1:3); %maxtrix data of the time
 time = 1:length(timeMat);
+timeofday = input(:,3); %time of day
 time = time'; %time in hours for dataset
 deltaTime = 1; % time increment IN HOURS
 
@@ -51,10 +52,13 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 [netLoadSolar,solarGen] = calcLoadWithSolar(load,solar1MW,arraySize);
 
 %calculate load with BESS, Energy in BESS, Power out of BESS
+
 %For BESSFunc original
 %[powerOutBESS,energyBESS,netLoadBESS] = BESSFunc(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargeThreshold,dischargeThreshold);
 %For BESSFunc2S:
-[powerOutBESS,energyBESS,netLoadBESS] = BESSFunc2S(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity);
+% [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc2S(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity);
+% % For BESSt
+[powerOutBESS,energyBESS,netLoadBESS] = BESStFunc(npCapacity,timeofday,netLoadSolar,energyCapBESS,deltaTime,arraySize,solarGen,chargePowerCap,initialEnergyBESS,time,dischargePowerCap);
 
 %calculate overloads, both above nameplate rating and damaging
 %overload for load without solar+BESS and no substation upgrade
@@ -76,14 +80,13 @@ percLoadGrowth = 5;
 
 % plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Yearly Net Loads and Solar, BESS Outputs');
 % plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
-%
+% 
 % plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
 % plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
 % 
 % plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
 
-plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,"Net Costs in C02);
-title("Net Costs in C02 and USD");
+plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
 
 
 % %graph of netload with just solar, netload with BESS+solar, solar generation, BESS power out
@@ -167,6 +170,3 @@ title("Net Costs in C02 and USD");
 % xlabel('Years');
 % legend('CO2 emissions BESS','CO2 emissions subst. upgrade','USD costs BESS','USD costs subst. upgrade');
 % title('Costs in Net CO2 Emissions/USD');
-
-
-

@@ -33,6 +33,8 @@ else
     ylabel('MWh');
 end
 
+ax = gca;
+ax.FontSize = 13;
 xlabel('Time in hours after 12 am 1/1/20');
 legend('Load w/ Solar and BESS','BESS Power Output', 'Energy Stored in BESS');
 title(titleText);
