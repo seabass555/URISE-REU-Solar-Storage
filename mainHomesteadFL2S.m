@@ -101,7 +101,7 @@ isBlackoutAtNP = 1; %option to allow user to have limited overloads
 plotOverloads2(3,load,npCapacity,npOverloadsBaseline,timeOverloadBase,isDamagingBase,0,'Baseline Overloads');
 plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamagingBESS,0,'Overloads w/ Solar and BESS');
 % 
-% plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
+%plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
 
 %disp(NPV_BESS(30));
 
