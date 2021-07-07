@@ -80,7 +80,7 @@ percLoadGrowth = 3;
 %% Generate graphs
 
 plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Title Text');
-plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Title Text');
+plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
 
 plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Title Text');
 title("Baseline Overloads");

@@ -1,4 +1,4 @@
-function [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoad,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor,overloadThreshold,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency)
+function [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoad,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor,overloadThreshold,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap,arraySize)
 %This is a modified version of the BESSFunc to implement thresholds that
 %change over time based on a percentage of mean load (chargePerc, dischargePerc). Also uses a
 %"dischargeFactor" which allows the load to go above the discharge
@@ -51,11 +51,11 @@ powerOutBESS(powerOutBESS < -dischargePowerCap) = -dischargePowerCap;
 
 for i = 1:length(time)
     %calculate change in energy at index
-    if powerOutBESS(i) < 0 || solarGen(i) < -powerOutBESS(i) % if batteries are charging AND solar output is NOT enough to cover their charging completely
+    if powerOutBESS(i) < 0 && solarGen(i) < -powerOutBESS(i) % if batteries are charging AND solar output is NOT enough to cover their charging completely
         deltaEnergyBESS = solarGen(i) * deltaTime * roundTripEfficiency * converterEfficiency;
         powerOutBESS(i) = powerOutBESS(i) + solarGen(i);
         deltaEnergyBESS = deltaEnergyBESS + -powerOutBESS(i) * deltaTime * roundTripEfficiency * inverterEfficiency;
-    elseif powerOutBESS(i) < 0 || solarGen(i) > -powerOutBESS(i) % if batteries are charging AND solar output is enough to cover their charging completely
+    elseif powerOutBESS(i) < 0 && solarGen(i) > -powerOutBESS(i) % if batteries are charging AND solar output is enough to cover their charging completely
         deltaEnergyBESS = -powerOutBESS(i) * deltaTime * roundTripEfficiency * converterEfficiency;
     else % if batteries are discharging OR neither charging nor discharging
         deltaEnergyBESS = -powerOutBESS(i) * deltaTime; %Sebastian will kick you if you don't convert to energy
@@ -67,6 +67,9 @@ for i = 1:length(time)
     else
         energyBESS(i) = energyBESS(i-1) + deltaEnergyBESS;
     end
+    
+    %implement charge loss; <= 3% per month is 0.00004196% per hour
+    energyBESS(i) = energyBESS(i) * 0.999958904; 
     
     %check to see if energy went above capacity or below 0 and correct energy and power
     %over capacity
