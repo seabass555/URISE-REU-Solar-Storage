@@ -25,15 +25,17 @@ powerOutBESS(powerOutBESS < -dischargePowerCap) = -dischargePowerCap;
 
 %% Determine Power Output
 isscheDischarge = (timeofday >= startdischarge) & (timeofday <= enddischarge); %Sets the discharging time
+%disp(isscheDischarge);
 isscheCharge = (timeofday >= startcharge) & (timeofday <= endcharge); %Sets the charging time
+%disp(isscheCharge);
 
 isOverloadDischarge = (netLoadSolar > npCapacity); %Accounting for Overloads
-isChargeViaSolar = (solarGen > arraySize .* chargeviaSolarFactor); %Allows the batteries to charge via solar
+isChargeViaSolar = (solarGen > (arraySize .* chargeviaSolarFactor)); %Allows the batteries to charge via solar
 
 powerOutBESS(isscheDischarge) = (energyCapBESS * emerBESSPercent)/(enddischarge - startdischarge); %Allows for an even distribution of discharge
-powerOutBESS(isscheCharge) = (energyCapBESS * emerBESSPercent)/(endcharge - startcharge); %Allows for an even distribution of charge
+powerOutBESS(isscheCharge) = -(energyCapBESS * emerBESSPercent)/(endcharge - startcharge); %Allows for an even distribution of charge
 powerOutBESS(isOverloadDischarge) = netLoadSolar(isOverloadDischarge) - npCapacity; %Quells overload back to the npCapacity
-powerOutBESS(isChargeViaSolar) = solarGen(isChargeViaSolar) - (arraySize .* chargeviaSolarFactor); %Will chage the batteries whenever the solar generates >60% of its nameplate
+powerOutBESS(isChargeViaSolar) = -(solarGen(isChargeViaSolar) - (arraySize .* chargeviaSolarFactor)); %Will chage the batteries whenever the solar generates >60% of its nameplate
 
 %Account for the range of charge within the batteries
 % energyBESS(energyBESS > energyCapBESS) = energyCapBESS;
