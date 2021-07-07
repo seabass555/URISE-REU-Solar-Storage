@@ -22,6 +22,8 @@ else
     plot(solarGen,'y','LineWidth',2);
 end
 
+ax = gca;
+ax.FontSize = 13;
 xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Baseline Load', 'Load w/ Solar','Load w/ Solar and Storage','BESS Power Output','Solar Generation');

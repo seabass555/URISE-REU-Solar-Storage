@@ -26,12 +26,14 @@ for i = 1:length(timeOverload)
     end
 end
 
-
+ax = gca;
+ax.FontSize = 13;
 xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Load','Nameplate Rating', 'Overloads', 'Overloads that may Cause Damage');
 title(titleText);
-xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
-xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
+if isYearView == 1
+    xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
+    xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 end
 
