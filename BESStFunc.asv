@@ -6,11 +6,11 @@ function [powerOutBESS,energyBESS,netLoadBESS] = BESStFunc(npCapacity,timeofday,
 
 %% Variable Assignment
 
-emerBESS = 20; %percentage of energy left for emergency overloads
+emerBESS = 25; %percentage of energy left for emergency overloads
 emerBESSPercent = emerBESS/100; %convert to percentage
 emerBESSnrg = energyCapBESS * emerBESSPercent;
-startdischarge = 19;
-enddischarge = 23;
+startdischarge = 17;
+enddischarge = 21;
 startcharge = 0;
 endcharge = 7;
 chargeviaSolarFactor = 60/100; %percent of NP Capacity production at which solar production would otherwise be curtailed
@@ -24,7 +24,7 @@ powerOutBESS = zeros(length(time),1);
 % scheBESSnrg = zeros(length(time),1);
 % emerBESSnrg = zeros(length(time),1);
 
-scheBESSnrgEmpty = energyCapBESS * emerBESS; %Allows for emergency energy to remained untouched by scheduled dishcharges
+% scheBESSnrgEmpty = energyCapBESS * emerBESS; %Allows for emergency energy to remained untouched by scheduled dishcharges
 % % scheBESSnrg(i) = energyBESS(i).*[1-(emerBESS)]; %amount of energy in the batteries for scheduled discharges 
 
 %correct for any power that is outside of power capacity limit (check both pos/neg limit)
@@ -39,21 +39,22 @@ powerOutBESS(powerOutBESS < -dischargePowerCap) = -dischargePowerCap;
 % chargestart = (timeofday == startcharge);
 % dischargetime = (timeofday >= startdischarge+1) & (timeofday < enddischarge);
 % chargetime = (timeofday >= startcharge+1) & (timeofday < endcharge);
-
-isscheDischarge = (timeofday >= startdischarge) & (timeofday <= enddischarge);
-isscheCharge = (timeofday >= startcharge) & (timeofday <= endcharge);
-
+% 
+% isscheDischarge = (timeofday >= startdischarge) & (timeofday <= enddischarge);
+% % disp(isscheDischarge);
+% isscheCharge = (timeofday >= startcharge) & (timeofday <= endcharge);
+% disp(isscheCharge);
 isOverloadDischarge = (netLoadSolar > npCapacity);
 isChargeViaSolar = (solarGen > arraySize .* chargeviaSolarFactor);
 
-powerOutBESS(isscheDischarge) = (energyCapBESS * emerBESSPercent)/(enddischarge - startdischarge);
-powerOutBESS(isscheCharge) = (energyCapBESS * emerBESSPercent)/(endcharge - startcharge);
-powerOutBESS(isOverloadDischarge) = netLoadSolar(isOverloadDischarge) - npCapacity;
-powerOutBESS(isChargeViaSolar) = solarGen(isChargeViaSolar) - (arraySize .* chargeviaSolarFactor);
+% powerOutBESS(isscheDischarge) = (energyCapBESS * emerBESSPercent)/(enddischarge - startdischarge);
+% powerOutBESS(isscheCharge) = (energyCapBESS * emerBESSPercent)/(endcharge - startcharge);
+% powerOutBESS(isOverloadDischarge) = netLoadSolar(isOverloadDischarge) - npCapacity;
+% powerOutBESS(isChargeViaSolar) = solarGen(isChargeViaSolar) - (arraySize .* chargeviaSolarFactor);
 
 %Account for the range of charge within the batteries
-energyBESS(energyBESS > energyCapBESS) = energyCapBESS;
-energyBESS(energyBESS < 0) = 0;
+% energyBESS(energyBESS > energyCapBESS) = energyCapBESS;
+% energyBESS(energyBESS < 0) = 0;
 % scheBESSnrg(scheBESSnrg > energyCapBESS) = energyCapBESS;
 % scheBESSnrg(scheBESSnrg < scheBESSnrgEmpty) = scheBESSnrgEmpty;
 % emerBESSnrg(emerBESSnrg > scheBESSnrgEmpty) = scheBESSnrgEmpty;
@@ -95,11 +96,24 @@ energyBESS(energyBESS < 0) = 0;
 % %% To determine Discharging Time
 % 
 %     if dischargestart(i) == 1 && energyBESS(i) > emerBESS
-%     if timeofday(i) == startdischarge
+    
+%  % SEB's suggestion: (make sure variable names are correct, this is just phsedocode)
+%    for i = 1:length(time) 
+%     if timeofday(i) == startcharge
+%             powerOutBESS(i:i+(endcharge - startcharge)) = -((energyBESS(i) - emerBESSnrg)/(endcharge - startcharge));
+%     elseif timeofday(i) == startdischarge
 %         powerOutBESS(i:i+(enddischarge - startdischarge)) = (energyBESS(i) - emerBESSnrg)/(enddischarge - startdischarge); %averages out the power in BESS over the time period
-%     elseif dischargetime(i) == 1
-%             powerOutBESS(i) = powerOutBESS(i-1);
-%     elseif netLoadSolar(i) > npCapacity %accounts for emergency discharge
+%     end
+% 
+%     if isOverloadDischarge(i) == 1
+%            powerOutBESS(i) = netLoadSolar(i) - npCapacity;
+%     elseif isChargedBySolar(i) == 1
+%            powerOutBESS(i) = -(solarGen - (arraySize * chargeviaSolarFactor);
+%     end
+% 
+%     
+%     
+% elseif netLoadSolar(i) > npCapacity %accounts for emergency discharge
 %         powerOutBESS(i) = netLoadSolar - npCapacity;
 %     else 
 %         powerOutBESS(i) = 0;
@@ -142,6 +156,32 @@ energyBESS(energyBESS < 0) = 0;
 
 % Seb's Code
 for i = 1:length(time)
+    %Determine Power Output of Batteries
+    if timeofday(i) == startcharge %to start scheduled charge 
+        powerOutBESS(i:(i+(endcharge - startcharge))) = -((energyCapBESS - emerBESSnrg)/(endcharge - startcharge));
+    elseif timeofday(i) == startdischarge && i > 1 %to start scheduled discharge
+        powerOutBESS(i:(i+(enddischarge - startdischarge))) = (energyBESS(i-1) - emerBESSnrg)/(enddischarge - startdischarge); %averages out the power in BESS over the time period
+%    disp(powerOutBESS(i));
+    end
+
+    if isOverloadDischarge(i) == 1 %to define when overloads occur
+        powerOutBESS(i) = netLoadSolar(i) - npCapacity;
+    elseif isChargeViaSolar(i) == 1 %to define when solar generation charges the batteries
+        powerOutBESS(i) = -(solarGen(i) - (arraySize * chargeviaSolarFactor));
+        disp("Energy"); 
+        if i > 1
+        disp(energyBESS(i-1));
+        end
+        disp("Power");
+        disp(powerOutBESS(i));
+    end
+    
+    if powerOutBESS(i) > chargePowerCap
+        powerOutBESS(i) = chargePowerCap;
+    elseif powerOutBESS(i) < -dischargePowerCap
+        powerOutBESS(i) = -dischargePowerCap;
+    end
+    
     %calculate change in energy at index
     deltaEnergyBESS = -powerOutBESS(i) * deltaTime; %Sebastian will kick you if you don't convert to energy
     %determine energy at each index from change in energy due to power
