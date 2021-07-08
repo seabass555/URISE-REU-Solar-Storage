@@ -118,10 +118,10 @@ const.r = 0.03; %3 percent interest rate
 %% initalize "opt." from inputs
 
 %demo input data
-solarCapMin = 0;
-solarCapMax = 100;
-BESSCapMin = 0;
-BESSCapMax = 200;
+solarCapMin = 10;
+solarCapMax = 50;
+BESSCapMin = 10;
+BESSCapMax = 100;
 upgradeMin = 0;
 upgradeMax = 100;
 
@@ -153,12 +153,10 @@ disp("size of solar-BESS matrix");
 disp(size(opt.NPVSolarAndBESS));
 disp("size of substation upgrade array");
 disp(length(opt.NPVSubstUpgrade));
-
-%display estimated runtime...
 disp("estimated runtime (sec): ");
 estRuntime = 0.0417*(solar_maxi*BESS_maxi + upgrade_maxi);
-disp(estRuntime);
 
+%display estimated runtime...
 tic
 
 %% run simulation

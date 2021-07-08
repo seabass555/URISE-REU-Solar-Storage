@@ -14,11 +14,10 @@ runSolarBESS.energySolar = sum(runSolarBESS.solarGen,'omitnan')*1;
 
 %need to correct the energy output in case the total energy generated is
 %above the annual energy consumption (i.e. cannot have negative net energy)
-if runSolarBESS.energySolar > const.energyLoad
-    runSolarBESS.energySolar = const.energyLoad;
-end
-    
-runSolarBESS.percSolarPen = (runSolarBESS.energySolar/const.energyLoad)*100; %maximum of 100%
+if runSolarBESS.energySolar >= const.energyLoad
+
+
+runSolarBESS.percSolarPen = (runSolarBESS.energySolar/const.energyLoad)*100;
 
 %Debug
 % disp("solar pennetration: ")

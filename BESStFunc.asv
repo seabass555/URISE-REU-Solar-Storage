@@ -95,23 +95,11 @@ energyBESS(energyBESS < 0) = 0;
 % %% To determine Discharging Time
 % 
 %     if dischargestart(i) == 1 && energyBESS(i) > emerBESS
-%     
-%   SEB's suggestion: (make sure variable names are correct, this is just phsedocode)
-%     %
-%     if timeofday(i) == startcharge
-%             powerOutBESS(i:i+(endcharge - startcharge)) = -((energyBESS(i) - emerBESSnrg)/(endcharge - startcharge));
-%     elseif timeofday(i) == startdischarge
+%     if timeofday(i) == startdischarge
 %         powerOutBESS(i:i+(enddischarge - startdischarge)) = (energyBESS(i) - emerBESSnrg)/(enddischarge - startdischarge); %averages out the power in BESS over the time period
-%     end
-%
-%     if isOverloadDischarge(i) == 1
-%            %powerOutBESS(i) = NetLoadSolar(i) - npCapacity;
-%     elseif isChargedBySolar(i) == 1
-%            %powerOutBESS(i) = -(power charged by solar at this index)
-% 
-%     
-%     
-% elseif netLoadSolar(i) > npCapacity %accounts for emergency discharge
+%     elseif dischargetime(i) == 1
+%             powerOutBESS(i) = powerOutBESS(i-1);
+%     elseif netLoadSolar(i) > npCapacity %accounts for emergency discharge
 %         powerOutBESS(i) = netLoadSolar - npCapacity;
 %     else 
 %         powerOutBESS(i) = 0;

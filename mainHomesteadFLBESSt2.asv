@@ -22,17 +22,17 @@ deltaTime = 1; % time increment IN HOURS
 %BESS variables
 energyCapBESS = 100; % MWh maximum capacity
 initialEnergyBESS = 40; % MWh initial capacity
-chargePowerCap = 15; %MW BESS charge Power Cap
-dischargePowerCap = 15; %MW BESS discharge Power Cap
+%chargePowerCap = 15; %MW BESS charge Power Cap
+%dischargePowerCap = 15; %MW BESS discharge Power Cap
 
 %use these for BESSFunc original:
 %chargeThreshold = 65; % load in MW at when BESS will charge
 %dischargeThreshold = 90; % load in MW when BESS will discharge
 
 %use these for BESSFunc2S:
-chargePerc = 90; %percentage of mean load to charge
-dischargePerc = 110; %percentage of mean load to discharge
-dischargeFactor = 50; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
+%chargePerc = 90; %percentage of mean load to charge
+%dischargePerc = 110; %percentage of mean load to discharge
+%dischargeFactor = 50; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
 
 arraySize = 40; % capacity of solar array in MW
@@ -58,9 +58,7 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 %For BESSFunc2S:
 % [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc2S(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity);
 % % For BESSt
-%                                                (npCapacity,timeofday,netLoadSolar,energyCapBESS,deltaTime,arraySize,solarGen,chargePowerCap,dischargePowerCap,initialEnergyBESS,time)
-% 
-[powerOutBESS,energyBESS,netLoadBESS] = BESStFunc(npCapacity,timeofday,netLoadSolar,solarGen,arraySize,energyCapBESS,deltaTime,chargePowerCap,dischargePowerCap,initialEnergyBESS,time); 
+[powerOutBESS,energyBESS,netLoadBESS] = BESSt2Func(npCapacity,timeofday,netLoadSolar,solarGen,arraySize,energyCapBESS,deltaTime,chargePowerCap,dischargePowerCap,initialEnergyBESS,time);
 
 %calculate overloads, both above nameplate rating and damaging
 %overload for load without solar+BESS and no substation upgrade
@@ -81,12 +79,12 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 %% Generate graphs
 
 % plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Yearly Net Loads and Solar, BESS Outputs');
-% plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
+plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
 % 
 % plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
 % plotOverloads(4,netLoadBESS,npCapacity,npOverloadsBESS,adjustedOverloadsBESS,0,'Overloads w/ Solar and BESS');
 % 
-% plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
+plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
 
 % plotCosts(6,netCostsCO2BESS,netCostsCO2Upgrade,netCostsUSDBESS,netCostsUSDUpgrade,'Net Costs in C02','Net Costs in USD');
 
