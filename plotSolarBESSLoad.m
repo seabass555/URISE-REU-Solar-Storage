@@ -13,7 +13,7 @@ else
     axis([3852 4188 -15 130]);
 end
 plot(load,'b');
-plot(netLoadSolar, ':r');
+plot(netLoadSolar, ':r','LineWidth',1.5);
 plot(netLoadBESS, 'g');
 plot(powerOutBESS,'k');
 if isYearView == 1
@@ -23,7 +23,7 @@ else
 end
 
 ax = gca;
-ax.FontSize = 13;
+ax.FontSize = 20;
 xlabel('Time in hours after 12 am 1/1/20');
 ylabel('MW');
 legend('Baseline Load', 'Load w/ Solar','Load w/ Solar and Storage','BESS Power Output','Solar Generation');
