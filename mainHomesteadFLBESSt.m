@@ -34,6 +34,14 @@ chargePerc = 90; %percentage of mean load to charge
 dischargePerc = 110; %percentage of mean load to discharge
 dischargeFactor = 50; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
+%Use these for RealBESStFunc (time-based BESS charging and discharging):
+emerBESS = 30; %percentage of energy left for emergency overloads
+startcharge = 0; %time in which batteries will start scheduled charge
+endcharge = 7; %time in which batteries will end scheduled charge
+startdischarge = 17; %time when batteries will start scheduled discharge
+enddischarge = 21; %time when batteries will end scheduled discharge
+chargeViaSolarThreshold = 60; %percent of NP Capacity production at which solar production would otherwise be curtailed
+
 
 arraySize = 40; % capacity of solar array in MW
 
@@ -58,7 +66,7 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 %For BESSFunc2S:
 % [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc2S(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity);
 % % For BESSt
-[powerOutBESS,energyBESS,netLoadBESS] = BESStFunc(npCapacity,timeofday,netLoadSolar,solarGen,arraySize,energyCapBESS,deltaTime,chargePowerCap,dischargePowerCap,initialEnergyBESS,time);
+[powerOutBESS,energyBESS,netLoadBESS] = RealBESStFunc(emerBESS,startcharge,endcharge,startdischarge,enddischarge,chargeViaSolarThreshold,npCapacity,timeofday,netLoadSolar,solarGen,arraySize,energyCapBESS,deltaTime,chargePowerCap,dischargePowerCap,initialEnergyBESS,time);
 
 %calculate overloads, both above nameplate rating and damaging
 %overload for load without solar+BESS and no substation upgrade
@@ -71,7 +79,7 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 [npOverloadsUpgrade,adjustedOverloadsUpgrade] = calcOverloads(load, (npCapacity+npCapacityInc), time, adjustmentFactorMax, adjustmentFactor);
 
 %calculate costs TBD...
-% percLoadGrowth = 5;
+% percLoadGrowth = 5;`
 % [netCostsCO2BESS,annualCO2BESS,netCostsUSDBESS,annualCostsUSDBESS] = calcCosts(netLoadBESS,percLoadGrowth,arraySize,energyCapBESS,npCapacity,0,adjustedOverloadsBESS);
 % [netCostsCO2Upgrade,annualCO2Upgrade,netCostsUSDUpgrade,annualCostsUSDUpgrade] = calcCosts(load,percLoadGrowth,0,0,(npCapacity+npCapacityInc),npCapacityInc,adjustedOverloadsUpgrade);
 % 
@@ -217,10 +225,10 @@ plot(time,netLoadSolar, 'r');
 plot(time,powerOutBESS,'k');
 plot(time,netLoadBESS, 'g');
 plot(time,solarGen, 'y');
-xlabel('Time in hours after 12 am 1/1/20');
-ylabel('MW');
-legend('Load with Solar generation', 'BESS Power Output', 'Load with Solar and Storage', 'Solar Generation');
-title('Net Loads and Solar, BESS Outputs');
+xlabel('Time in hours after 12 am 1/1/20','FontSize',16);
+ylabel('MW','FontSize',16);
+legend('Load with Solar generation', 'BESS Power Output', 'Load with Solar and Storage', 'Solar Generation','FontSize',16);
+title('Net Loads and Solar, BESS Outputs','FontSize',16);
 xticks([0 744 1440 2184 2904 3648 4368 5112 5856 6576 7320 8040]);
 xticklabels({'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'});
 

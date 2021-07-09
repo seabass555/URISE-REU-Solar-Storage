@@ -1,4 +1,4 @@
-function [powerOutBESS,energyBESS,netLoadBESS] = RealBESStFunc(npCapacity,timeofday,netLoadSolar,solarGen,arraySize,energyCapBESS,deltaTime,chargePowerCap,dischargePowerCap,initialEnergyBESS,time)
+function [powerOutBESS,energyBESS,netLoadBESS] = RealBESStFunc(emerBESS,startcharge,endcharge,startdischarge,enddischarge,chargeViaSolarThreshold,npCapacity,timeofday,netLoadSolar,solarGen,arraySize,energyCapBESS,deltaTime,chargePowerCap,dischargePowerCap,initialEnergyBESS,time)
 % % This is a time-based discharging BESS function, where the batteries
 % % discharge evenly throughout a specified time period.  They will charge up
 % % to 80% at night (when electricity prices are the lowest) and allow for
@@ -6,14 +6,15 @@ function [powerOutBESS,energyBESS,netLoadBESS] = RealBESStFunc(npCapacity,timeof
 
 %% Variable Assignment
 
-emerBESS = 30; %percentage of energy left for emergency overloads
+% emerBESS = 30; %percentage of energy left for emergency overloads
 emerBESSPercent = emerBESS/100; %convert to percentage
 emerBESSnrg = energyCapBESS * emerBESSPercent;
-startdischarge = 17;
-enddischarge = 21;
-startcharge = 0;
-endcharge = 7;
-chargeviaSolarFactor = 60/100; %percent of NP Capacity production at which solar production would otherwise be curtailed
+% startdischarge = 17;
+% enddischarge = 21;
+% startcharge = 0;
+% endcharge = 7;
+% chargeViaSolarThreshold = 60;
+chargeviaSolarFactor = chargeViaSolarThreshold/100; %percent of NP Capacity production at which solar production would otherwise be curtailed
 
 %initialize energy, power output, threshold arrays
 energyBESS = zeros(length(time),1);
