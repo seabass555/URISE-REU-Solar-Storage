@@ -26,7 +26,7 @@ dischargePowerCap = 15; %MW BESS discharge Power Cap
 inverterEfficiency = .962;
 converterEfficiency = .98;
 roundTripEfficiency = .86;
-DoDCap = 0.9;
+DoDCap = 0.5; %depth of discharge cap
 
 %use these for BESSFunc original:
 %chargeThreshold = 65; % load in MW at when BESS will charge
@@ -60,7 +60,7 @@ npCapacityInc = 10; %for potential substation upgrade - MW increase in nameplate
 %For BESSFunc2S:
 %[powerOutBESS,energyBESS,netLoadBESS] = BESSFunc2S(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity);
 %For BESSFunc2S:
-[powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap);
+[cycleNum,powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoadSolar,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor, npCapacity,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap);
 
 %calculate overloads, both above nameplate rating and damaging
 %overload for load without solar+BESS and no substation upgrade
