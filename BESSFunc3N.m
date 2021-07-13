@@ -1,4 +1,4 @@
-function [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoad,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor,overloadThreshold,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap,arraySize)
+function [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoad,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor,overloadThreshold,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap)
 %This is a modified version of the BESSFunc to implement thresholds that
 %change over time based on a percentage of mean load (chargePerc, dischargePerc). Also uses a
 %"dischargeFactor" which allows the load to go above the discharge
@@ -85,8 +85,8 @@ for i = 1:length(time)
     end
     
     %energy below zero
-    if energyBESS(i) < 0
-        energyBESS(i) = 0;
+    if energyBESS(i) < ((1 - DoDCap) * energyCapBESS)
+        energyBESS(i) = ((1 - DoDCap) * energyCapBESS);
         
         %recalculate power based on new change in energy
         if i == 1
