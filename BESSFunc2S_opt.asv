@@ -10,8 +10,8 @@ function [runSolarBESS] = BESSFunc2S_opt(const, runSolarBESS)
 %determine power caps from hour capacity
 %const.chargePowerCap = 15; %MW BESS charge Power Cap
 %const.dischargePowerCap = 15; %MW BESS discharge Power Cap
-if const.isSpecPower == 0
-chargePowerCap = runSolarBESS.sizeBESS / const.hourPowerCapBESS; %MW BESS charge Power Cap, based on hour duration of max operation
+if const.isSpecPower == 1
+chargePowerCap = runSolarBESS.sizeBESS / const.hourPowerCapBESS; %MW BESS charge Power Cap
 dischargePowerCap = chargePowerCap; %MW BESS discharge Power Cap
 else
     chargePowerCap = const.chargePowerCap;

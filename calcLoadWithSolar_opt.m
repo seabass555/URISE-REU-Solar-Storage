@@ -6,7 +6,9 @@ function [runSolarBESS] = calcLoadWithSolar_opt(const, runSolarBESS)
 
 runSolarBESS.solarGen = const.solarGen1MW .* runSolarBESS.sizeSolar;
 runSolarBESS.netLoadSolar = const.load-runSolarBESS.solarGen;
+%correct if net load would end up becoming negative
 runSolarBESS.netLoadSolar(runSolarBESS.netLoadSolar<0) = 0;
+runSolarBESS.solarGen(runSolarBESS.solarGen > const.load) = const.load(runSolarBESS.solarGen > const.load);
 
 %determine the percent solar penetration into the grid
 %const.energyLoad = sum(const.load,'omitnan')*1; -- this line moved to main
@@ -19,6 +21,11 @@ if runSolarBESS.energySolar > const.energyLoad
 end
     
 runSolarBESS.percSolarPen = (runSolarBESS.energySolar/const.energyLoad)*100; %maximum of 100%
+
+%determine total year 1 gains from solar generation, i.e. from offsetting
+%cost of generation from power plant
+hourGainsOfSolar = runSolarBESS.solarGen .* const.hourCostOfGen;
+runSolarBESS.yrOneGainsSolar = sum(hourGainsOfSolar, 'omitnan');
 
 %Debug
 % disp("solar pennetration: ")

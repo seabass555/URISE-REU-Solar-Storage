@@ -43,18 +43,18 @@ runUpgrade.annualCO2Upgrade = zeros(const.projectLifetime,1);
 %net costs is the sum of all previous years, while annual is for each year
 %annualMaintainceSolarCO2 = const.annualMaintaincePerMWSolarCO2*runSolarBESS.sizeSolar;
 %annualMaintainceBESSCO2 = const.annualMaintaincePerMWhStorageCO2*runSolarBESS.sizeBESS;
-annualMaintainceSubstCO2 = const.annualMaintaincePerMWSubstCO2*(const.npCapacity+runUpgrade.sizeUpgrade);
+annualOMSubstCO2 = const.annualOMPerMWSubstCO2*(const.npCapacity+runUpgrade.sizeUpgrade);
 %instCostSolarCO2 = const.instCostSolarPerMWCO2*runSolarBESS.sizeSolar;
 %instCostBESSCO2 = const.instCostStoragePerMWhCO2*runSolarBESS.sizeBESS;
 instCostSubstCO2 = const.instCostSubstPerMWCO2*runUpgrade.sizeUpgrade;
 
 %determine for year 1
-runUpgrade.netCO2Upgrade(1) = annualMaintainceSubstCO2+instCostSubstCO2; %annualLoadCO2(1)+annualMaintainceSolarCO2+annualMaintainceBESSCO2+instCostSolarCO2+instCostBESSCO2;
+runUpgrade.netCO2Upgrade(1) = annualOMSubstCO2+instCostSubstCO2; %annualLoadCO2(1)+annualOMSolarCO2+annualOMBESSCO2+instCostSolarCO2+instCostBESSCO2;
 runUpgrade.annualCO2Upgrade(1) = runUpgrade.netCO2Upgrade(1);
 
 for i = 2:const.projectLifetime %iterate through years of calculation
     %determine annual CO2 for this year
-    runUpgrade.annualCO2Upgrade(i)=annualMaintainceSubstCO2;
+    runUpgrade.annualCO2Upgrade(i)=annualOMSubstCO2;
     %determine if hardware replacement
 %     if mod(i,const.yearsPerHardwRep) == 0
 %         runUpgrade.annualCO2Upgrade(i) = runUpgrade.annualCO2Upgrade(i) + const.costHardwRepPerMWCO2*runSolarBESS.sizeSolar; %assume scales linearly w/ size of solar
@@ -164,11 +164,11 @@ end
 % end
 if runUpgrade.sizeUpgrade > 0
     %arbirary inst. cost function for now
-    instCostUpgradeUSD = const.instCostSubstPerMWUSD*(0.5*runUpgrade.sizeUpgrade+const.npCapacity);
+    instCostUpgradeUSD = const.instCostSubstPerMWUSD*(runUpgrade.sizeUpgrade+const.npCapacity);
 else
     instCostUpgradeUSD = 0;
 end
-annualMaintainceSubstUSD=const.annualMaintaincePerMWSubstUSD*(const.npCapacity+runUpgrade.sizeUpgrade); %not in if statement, since solar/BESS still has it
+annualOMSubstUSD=const.annualOMPerMWSubstUSD*(const.npCapacity+runUpgrade.sizeUpgrade); %not in if statement, since solar/BESS still has it
 
 %%%%%start calculating annual net costs-benefits
 %initalize
@@ -178,12 +178,12 @@ runUpgrade.annualCB_Upgrade = zeros(const.projectLifetime,1);
 %determine upfront costs
 upfrontCost = instCostUpgradeUSD;
 %determine total costs after year 1
-runUpgrade.annualCB_Upgrade(1) = gainsOverloads(1)+gainsCarbonCredit(1)-(annualMaintainceSubstUSD);
+runUpgrade.annualCB_Upgrade(1) = gainsOverloads(1)+gainsCarbonCredit(1)-(annualOMSubstUSD);
 
 %run through all years
 for i = 2:const.projectLifetime
     %maintaince costs+overload costs
-    runUpgrade.annualCB_Upgrade(i) = gainsOverloads(i)+gainsCarbonCredit(i)-(annualMaintainceSubstUSD);
+    runUpgrade.annualCB_Upgrade(i) = gainsOverloads(i)+gainsCarbonCredit(i)-(annualOMSubstUSD);
     %check for hardware upgrade
 %     if mod(i,const.yearsPerHardwRep) == 0
 %         runUpgrade.annualCB_Upgrade(i) = runUpgrade.annualCB_Upgrade(i) - costHardwRepUSD_run; %add fixed cost for replacing hardware
