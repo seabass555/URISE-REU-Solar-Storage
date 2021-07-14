@@ -1,4 +1,4 @@
-function [powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoad,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor,overloadThreshold,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap)
+function [cycleNum,powerOutBESS,energyBESS,netLoadBESS] = BESSFunc3N(time,deltaTime,netLoad,initialEnergyBESS,energyCapBESS,chargePowerCap,dischargePowerCap,chargePerc,dischargePerc,dischargeFactor,overloadThreshold,solarGen,roundTripEfficiency,inverterEfficiency,converterEfficiency,DoDCap)
 %This is a modified version of the BESSFunc to implement thresholds that
 %change over time based on a percentage of mean load (chargePerc, dischargePerc). Also uses a
 %"dischargeFactor" which allows the load to go above the discharge
@@ -96,6 +96,13 @@ for i = 1:length(time)
         end
     end
 end
+
+% find the amount of cycles. A cycle is defined as a local minimum in the
+%      energy stored in the ESS when at least 50% of the maximum daily
+%      depth of discharge is used
+localMinArr = islocalmin(energyBESS);
+localMinArr(energyBESS(localMinArr) > (1 - DoDCap/2) * energyCapBESS)
+cycleNum = sum(sum(localMinArr));
 
 %determine net load with solar+BESS
 netLoadBESS = netLoad - powerOutBESS;
