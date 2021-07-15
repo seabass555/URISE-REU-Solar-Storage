@@ -19,8 +19,8 @@ time = time'; %time in hours for dataset
 deltaTime = 1; % time increment IN HOURS
 
 %BESS variables
-energyCapBESS = 40; % MWh maximum capacity
-initialEnergyBESS = 0; % MWh initial capacity
+energyCapBESS = 100; % MWh maximum capacity
+initialEnergyBESS = 40; % MWh initial capacity
 chargePowerCap = 15; %MW BESS charge Power Cap
 dischargePowerCap = 15; %MW BESS discharge Power Cap
 
@@ -29,12 +29,12 @@ dischargePowerCap = 15; %MW BESS discharge Power Cap
 % dischargeThreshold = 90; % load in MW when BESS will discharge
 
 %use these for BESSFunc2S:
-chargePerc = 110; %percentage of mean load to charge
+chargePerc = 80; %percentage of mean load to charge
 dischargePerc = 110; %percentage of mean load to discharge
-dischargeFactor = 90; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
+dischargeFactor = 30; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 
 
-arraySize = 10; % capacity of solar array in MW
+arraySize = 40; % capacity of solar array in MW
 
 %substation overload variables
 npCapacity = 90; %MW - nameplate rating of the substation transformer
@@ -91,7 +91,7 @@ isBlackoutAtNP = 1; %option to allow user to have limited overloads
 %% Generate graphs
 
 % plotSolarBESSLoad(1,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,1,'Yearly Net Loads and Solar, BESS Outputs');
-% plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
+plotSolarBESSLoad(2,load,netLoadSolar,netLoadBESS,solarGen,powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
 % 
 % %plot overloads (original plot function)
 % %plotOverloads(3,load,npCapacity,npOverloadsBaseline,adjustedOverloadsBaseline,0,'Baseline Overloads');
@@ -101,7 +101,7 @@ isBlackoutAtNP = 1; %option to allow user to have limited overloads
 plotOverloads2(3,load,npCapacity,npOverloadsBaseline,timeOverloadBase,isDamagingBase,0,'Baseline Overloads');
 plotOverloads2(4,netLoadBESS,npCapacity,npOverloadsBESS,timeOverloadBESS,isDamagingBESS,0,'Overloads w/ Solar and BESS');
 % 
-%plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
+plotBESSData(5,netLoadBESS,powerOutBESS,energyBESS,0,'Solar, BESS Outputs');
 
 %disp(NPV_BESS(30));
 

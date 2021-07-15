@@ -1,29 +1,26 @@
-function [runSolarBESS] = BESSFunc2S_opt(const, runSolarBESS)
+function [runSolarBESS] = BESSFunc3N_opt(const, runSolarBESS)
 %This is a modified version of the BESSFunc to implement thresholds that
 %change over time based on a percentage of mean load (chargePerc, dischargePerc). Also uses a
 %"dischargeFactor" which allows the load to go above the discharge
 %threshold but stay under the overloadThreshold.
 %Time increments must be in HOURS
-%INPUTS: const.time,const.deltaTime,runSolarBESS.netLoadSolar,const.initialEnergyBESS,runSolarBESS.sizeBESS,const.hourPowerCapBESS,const.chargePerc,const.dischargePerc,const.dischargeFactor, const.npCapacity
-%OUTPUTS: runSolarBESS.powerOutBESS,runSolarBESS.energyBESS,runSolarBESS.netLoadBESS
+
+%initialize energy, power output, threshold arrays
+runSolarBESS.energyBESS = zeros(length(const.time),1);
+runSolarBESS.powerOutBESS = zeros(length(const.time),1);
+dischargeThreshold = zeros(length(const.time),1);
+chargeThreshold = zeros(length(const.time),1);
+runSolarBESS.energyTotBESS = 0; %total energy discharged by the BESS in one year
 
 %determine power caps from hour capacity
-%const.chargePowerCap = 15; %MW BESS charge Power Cap
-%const.dischargePowerCap = 15; %MW BESS discharge Power Cap
-if const.isSpecPower == 1
-chargePowerCap = runSolarBESS.sizeBESS / const.hourPowerCapBESS; %MW BESS charge Power Cap
+if const.isSpecPower == 0
+chargePowerCap = runSolarBESS.sizeBESS / const.hourPowerCapBESS; %MW BESS charge Power Cap, based on hour duration of max operation
 dischargePowerCap = chargePowerCap; %MW BESS discharge Power Cap
 else
     chargePowerCap = const.chargePowerCap;
     dischargePowerCap = const.dischargePowerCap;
 end
 
-%initialize energy, power output, threshold arrays
-runSolarBESS.energyBESS = zeros(length(const.time),1); %energy stored in the ESS over time
-runSolarBESS.energyTotBESS = 0; %total energy discharged by the BESS in one year
-runSolarBESS.powerOutBESS = zeros(length(const.time),1);
-dischargeThreshold = zeros(length(const.time),1);
-chargeThreshold = zeros(length(const.time),1);
 
 %% calculate charge/discharge thresholds
 
@@ -65,17 +62,25 @@ runSolarBESS.powerOutBESS(runSolarBESS.powerOutBESS < -dischargePowerCap) = -dis
 
 for i = 1:length(const.time)
     %calculate change in energy at index
-    %implement charge/disch. efficiency here (line 56) <----- (could add
-    %conditions to see if charging/discharging/charged by solar/etc.)
-    deltaEnergyBESS = -runSolarBESS.powerOutBESS(i) * const.deltaTime; %Sebastian will kick you if you don't convert to energy
-    %determine energy at each index from change in energy due to power
+    if runSolarBESS.powerOutBESS(i) < 0 && runSolarBESS.solarGen(i) < -runSolarBESS.powerOutBESS(i) % if batteries are charging AND solar output is NOT enough to cover their charging completely
+        deltaEnergyBESS = runSolarBESS.solarGen(i) * const.deltaTime * const.roundTripEfficiency * const.converterEfficiency;
+        runSolarBESS.powerOutBESS(i) = runSolarBESS.powerOutBESS(i) + runSolarBESS.solarGen(i);
+        deltaEnergyBESS = deltaEnergyBESS + -runSolarBESS.powerOutBESS(i) * const.deltaTime * const.roundTripEfficiency * const.inverterEfficiency;
+    elseif runSolarBESS.powerOutBESS(i) < 0 && runSolarBESS.solarGen(i) > -runSolarBESS.powerOutBESS(i) % if batteries are charging AND solar output is enough to cover their charging completely
+        deltaEnergyBESS = -runSolarBESS.powerOutBESS(i) * const.deltaTime * const.roundTripEfficiency * const.converterEfficiency;
+    else % if batteries are discharging OR neither charging nor discharging
+        deltaEnergyBESS = -runSolarBESS.powerOutBESS(i) * const.deltaTime; %Sebastian will kick you if you don't convert to energy
+    end
+    %determine energy at each index from change in energy due to power 
+    
     if i == 1 %if first index
         runSolarBESS.energyBESS(i) = const.initialEnergyBESS + deltaEnergyBESS;
     else
         runSolarBESS.energyBESS(i) = runSolarBESS.energyBESS(i-1) + deltaEnergyBESS;
     end
     
-    %Charge loss to go here <-----
+    %implement charge loss; <= 3% per month is 0.00004196% per hour
+    runSolarBESS.energyBESS(i) = runSolarBESS.energyBESS(i) * const.chargeLossFactor;
     
     %check to see if energy went above capacity or below 0 and correct energy and power
     %over capacity
@@ -90,10 +95,9 @@ for i = 1:length(const.time)
         end
     end
     
-    %energy below zero
-    %implement depth of charge limit here (line 81) <-----
-    if runSolarBESS.energyBESS(i) < 0 %replace 0s with minimum depth of charge
-        runSolarBESS.energyBESS(i) = 0;
+    %energy below zero (and specified max DoD)
+    if runSolarBESS.energyBESS(i) < ((1 - const.percDoDCap/100) * runSolarBESS.sizeBESS)
+        runSolarBESS.energyBESS(i) = ((1 - const.percDoDCap/100) * runSolarBESS.sizeBESS);
         
         %recalculate power based on new change in energy
         if i == 1
@@ -113,7 +117,15 @@ for i = 1:length(const.time)
             runSolarBESS.energyTotBESS = runSolarBESS.energyTotBESS + (runSolarBESS.energyBESS(i-1)-runSolarBESS.energyBESS(i));
         end
     end
+    %disp("got to here");
 end
+
+% find the amount of cycles. A cycle is defined as a local minimum in the
+%      energy stored in the ESS when at least 50% of the maximum daily
+%      depth of discharge is used
+localMinArr = islocalmin(runSolarBESS.energyBESS);
+localMinArr(runSolarBESS.energyBESS(localMinArr) > (1 - (const.percDoDCap/100)/2) * runSolarBESS.sizeBESS);
+runSolarBESS.cyclesPerYear = sum(sum(localMinArr));
 
 %determine net load with solar+BESS
 runSolarBESS.netLoadBESS = runSolarBESS.netLoadSolar - runSolarBESS.powerOutBESS;

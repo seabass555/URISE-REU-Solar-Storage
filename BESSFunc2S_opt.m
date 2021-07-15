@@ -60,6 +60,7 @@ runSolarBESS.powerOutBESS(isOverload) = runSolarBESS.netLoadSolar(isOverload) - 
 runSolarBESS.powerOutBESS(runSolarBESS.powerOutBESS > chargePowerCap) = chargePowerCap;
 runSolarBESS.powerOutBESS(runSolarBESS.powerOutBESS < -dischargePowerCap) = -dischargePowerCap;
 %plot(time, powerOutBESS);
+%disp(runSolarBESS.powerOutBESS);
 
 %% determine energy output
 
