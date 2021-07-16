@@ -272,6 +272,9 @@ if const.isManualInput == 1
     end
 end
 
+if runSolarBESS.solar_i == 2
+    
+
 % if substUpgradeMW > 0
 %     %arbirary inst. cost function for now
 %     instCostUpgradeUSD = instCostSubstPerMWUSD*(0.5*substUpgradeMW+const.npCapacity);
