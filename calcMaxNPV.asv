@@ -34,7 +34,6 @@ optUpgrade = upgrade(optUpgrade_i);
 %save in struct
 opt.optSolar_i = optSolar_i;
 opt.optBESS_i = optBESS_i;
-opt.optUpgrade_i = optUpgrade_i;
 opt.optSolar = optSolarCapacity;
 opt.optBESS = optBESSCapacity;
 opt.maxNPVBESS = max_NPVBESS;

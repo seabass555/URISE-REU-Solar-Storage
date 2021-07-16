@@ -15,7 +15,7 @@ plot(zeros(30,1),'k--'); %add horizontal line on zero
 
 ax = gca;
 ax.FontSize = 13;
-ylabel('Tons CO2');
+ylabel('kg CO2');
 xlabel('Years');
 legend('CO2 emissions BESS','CO2 emissions subst. upgrade','Location','northwest');
 title(title1Text);

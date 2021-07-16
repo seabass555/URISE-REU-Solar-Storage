@@ -172,11 +172,11 @@ annualOMSubstUSD=const.annualOMPerMWSubstUSD*(const.npCapacity+runUpgrade.sizeUp
 
 %check if costs were entered manually, and if so, use those instead
 if const.isManualInput == 1
-    if ~isnan(const.manualSubstInstUSD(runUpgrade.upgrade_i))
-        instCostUpgradeUSD = const.manualSubstInstUSD(runUpgrade.upgrade_i);
+    if ~isnan(const.manualUpgradeInstUSD(runUpgrade.upgrade_i))
+        instCostUpgradeUSD = const.manualSolarInstUSD(runSolarBESS.solar_i);
     end
-    if ~isnan(const.manualSubstOMUSD(runUpgrade.upgrade_i))
-        annualOMSubstUSD = const.manualSubstOMUSD(runUpgrade.upgrade_i);
+    if ~isnan(const.manualSolarOMUSD(runUpgrade.upgrade_i))
+        annual= const.manualSolarOMUSD(runSolarBESS.solar_i);
     end
 end
 

@@ -18,10 +18,17 @@ function [runSolarBESS] = calcCosts2BESS_opt(const, runSolarBESS)
 annualEnergyDemand = zeros(const.projectLifetime,1);
 annualEnergySolar = zeros(const.projectLifetime,1);
 annualEnergyBESS = zeros(const.projectLifetime,1);
+numCyclesBESS = zeros(const.projectLifetime,1);
+energyThruBESS = zeros(const.projectLifetime,1);
 
 annualEnergyDemand(1) = const.energyLoad; %assign year 1 data
 annualEnergySolar(1) = runSolarBESS.energySolar;
 annualEnergyBESS(1) = runSolarBESS.energyTotBESS;
+numCyclesBESS(1) = runSolarBESS.cyclesPerYear;
+energyThruBESS(1) = runSolarBESS.energyTotBESS;
+
+isFirstBattRep = 1; %will indicate if this is the first battery replacement, to determine lifetime of ESS
+runSolarBESS.BESSLifetime = const.projectLifetime; %initalize as the same as solar lifetime, but will correct later in code if BESS gets replaced
 
 for i=2:const.projectLifetime %interate through years, adjust for load growth, solar deg.
     annualEnergyDemand(i)=annualEnergyDemand(i-1)*(1+const.percLoadGrowth/100);
@@ -29,35 +36,83 @@ for i=2:const.projectLifetime %interate through years, adjust for load growth, s
     
     %determine BESS energy output, accounting for degredation and
     %replacement
-    annualEnergyBESS(i)=annualEnergyBESS(i-1)*(1-runSolarBESS.percBESSDeg/100);
+    if annualEnergyBESS(i) == 0 %check if this year was not right after a BESS replacement
+        annualEnergyBESS(i)=annualEnergyBESS(i-1)*(1-const.percBESSDeg/100);
+    end
+    
+    %increment number of cycles
+    numCyclesBESS(i) = numCyclesBESS(i-1) + runSolarBESS.cyclesPerYear;
+    
+    %determine energy throughput of current BESS installation
+    energyThruBESS(i) = energyThruBESS(i-1) + annualEnergyBESS(i);
     
     if const.isSpecLifetime == 1 && mod(i,const.yearsPerBattRep) == 0 %lifetime is spec. by user, replace after certain number of years
-        annualEnergyBESS(i) = runSolarBESS.energyTotBESS; %restore original capacity
+        if i ~= const.projectLifetime
+            annualEnergyBESS(i+1) = runSolarBESS.energyTotBESS; %restore original capacity
+        end
+        numCyclesBESS(i) = 0; %reset number of cycles
+        energyThruBESS(i) = 0; %restore energy throughput for this installation
     elseif const.isSpecLifetime == 0 && const.percMinCapacityBattRep > (annualEnergyBESS(i)/runSolarBESS.energyTotBESS)*100  %lifetime is specified by minumum capacity
-        annualEnergyBESS(i) = runSolarBESS.energyTotBESS; %restore original capacity
-    end 
+        if i ~= const.projectLifetime
+            annualEnergyBESS(i+1) = runSolarBESS.energyTotBESS; %restore original capacity
+        end
+        numCyclesBESS(i) = 0;
+        energyThruBESS(i) = 0; %restore energy throughput for this installation
+        if isFirstBattRep == 1 %determine lifetime, if this is the first Battery replacement
+            runSolarBESS.BESSLifetime = i;
+            isFirstBattRep = 0;
+        end
+    elseif const.isSpecLifetime == 2 && numCyclesBESS(i) > const.maxNumCyclesBattRep %ESS replacement based on number of cycles
+        if i ~= const.projectLifetime
+            annualEnergyBESS(i+1) = runSolarBESS.energyTotBESS; %restore original capacity
+        end
+        numCyclesBESS(i) = 0; %restore number of cycles to zero
+        energyThruBESS(i) = 0; %restore energy throughput for this installation
+        if isFirstBattRep == 1 %determine lifetime, if this is the first Battery replacement
+            runSolarBESS.BESSLifetime = i;
+            isFirstBattRep = 0;
+        end
+    elseif const.isSpecLifetime == 3 && (energyThruBESS(i)/runSolarBESS.sizeBESS) > const.maxEnergyThruBattRep %if energy throughput lifetime
+        if i ~= const.projectLifetime
+            annualEnergyBESS(i+1) = runSolarBESS.energyTotBESS; %restore original capacity
+        end
+        numCyclesBESS(i) = 0; %restore number of cycles to zero
+        energyThruBESS(i) = 0; %restore energy throughput for this installation
+        if isFirstBattRep == 1 %determine lifetime, if this is the first Battery replacement
+            runSolarBESS.BESSLifetime = i;
+            isFirstBattRep = 0;
+        end
+    end
 end
 
 annualNetEnergy = annualEnergyDemand - annualEnergySolar; %determine net energy as vector, BESS is negligable
 %correct annualNetEnergy if it's negative or zero (will have 1 MWh as minimum)
 annualNetEnergy(annualNetEnergy < 1) = 1;
 
+%determine total energy output of solar over lifetime and throughput of
+%BESS
+runSolarBESS.totEnergyGenSolar = sum(annualEnergySolar, 'omitnan');
+runSolarBESS.totEnergyThruBESS = sum(annualEnergyBESS, 'omitnan');
 
 % disp("annual Net energy");
 % disp(length(annualNetEnergy));
 % disp(annualNetEnergy);
 
-%determine battery lifetime
-if const.isSpecLifetime == 1 %user specified
+if const.isSpecLifetime == 1 %user specified lifetime
     runSolarBESS.BESSLifetime = const.yearsPerBattRep;
-else %based on degredation
-    for i = 2:const.projectLifetime
-        if annualEnergyBESS(i) == runSolarBESS.energyTotBESS %if year i has original energy output, then year i is an upgrade year
-            runSolarBESS.BESSLifetime = i;
-            break %exit for loop
-        end
-    end
 end
+
+% %OLD Method - determine battery lifetime
+% if const.isSpecLifetime == 1 %user specified
+%     runSolarBESS.BESSLifetime = const.yearsPerBattRep;
+% else %based on degredation or number of cycles
+%     for i = 2:const.projectLifetime
+%         if annualEnergyBESS(i) == runSolarBESS.energyTotBESS %if year i has original energy output, then year i is the year after an upgrade year
+%             runSolarBESS.BESSLifetime = i-1;
+%             break %exit for loop
+%         end
+%     end
+% end
 
 
 %% Emissions costs
@@ -200,6 +255,26 @@ else
     %instCostStoragePerMWhUSD_run = 0; %set to zero, since used later to determine battery rep. costs
     costBattRepUSD = 0;
 end
+
+%check if costs were entered manually, and if so, use those instead
+if const.isManualInput == 1
+    if ~isnan(const.manualSolarInstUSD(runSolarBESS.solar_i))
+        instCostSolarUSD = const.manualSolarInstUSD(runSolarBESS.solar_i);
+    end
+    if ~isnan(const.manualSolarOMUSD(runSolarBESS.solar_i))
+        annualOMSolarUSD = const.manualSolarOMUSD(runSolarBESS.solar_i);
+    end
+    if ~isnan(const.manualBESSInstUSD(runSolarBESS.BESS_i))
+        instCostBESSUSD = const.manualBESSInstUSD(runSolarBESS.BESS_i);
+    end
+    if ~isnan(const.manualBESSOMUSD(runSolarBESS.BESS_i))
+        annualOMBESSUSD = const.manualBESSOMUSD(runSolarBESS.BESS_i);
+    end
+end
+
+if runSolarBESS.solar_i == 2
+    
+
 % if substUpgradeMW > 0
 %     %arbirary inst. cost function for now
 %     instCostUpgradeUSD = instCostSubstPerMWUSD*(0.5*substUpgradeMW+const.npCapacity);
@@ -212,23 +287,28 @@ annualOMSubstUSD=const.annualOMPerMWSubstUSD*const.npCapacity; %not in if statem
 %initalize
 runSolarBESS.annualCB_BESS = zeros(const.projectLifetime,1);
 
+%determine factors for cost reduction, will multiply costs for each system
+%by (1-factor)^t
+redSolarFactor = const.percCostReductionSolar/100;
+redBESSFactor = const.percCostReductionBESS/100;
 
 %determine upfront costs
 upfrontCost = instCostSolarUSD+instCostBESSUSD; %+instCostUpgradeUSD;
 %determine total costs after year 1
-runSolarBESS.annualCB_BESS(1) = gainsBESS(1)+gainsSolarGen(1)+gainsOverloads(1)+gainsCarbonCredit(1)-(annualOMSolarUSD+annualOMBESSUSD+annualOMSubstUSD);
+runSolarBESS.annualCB_BESS(1) = gainsBESS(1)+gainsSolarGen(1)+gainsOverloads(1)+gainsCarbonCredit(1)-(annualOMSolarUSD*(1-redSolarFactor)+annualOMBESSUSD*(1-redBESSFactor)+annualOMSubstUSD);
+
 
 %run through all years
 for i = 2:const.projectLifetime
     %maintaince costs+overload costs
-    runSolarBESS.annualCB_BESS(i) = gainsBESS(i)+gainsSolarGen(i)+gainsOverloads(i)+gainsCarbonCredit(i)-(annualOMSolarUSD+annualOMBESSUSD+annualOMSubstUSD);
+    runSolarBESS.annualCB_BESS(i) = gainsBESS(i)+gainsSolarGen(i)+gainsOverloads(i)+gainsCarbonCredit(i)-(annualOMSolarUSD*(1-redSolarFactor).^i+annualOMBESSUSD*(1-redBESSFactor).^i+annualOMSubstUSD);
     %check for hardware upgrade
     if mod(i,const.yearsPerHardwRep) == 0
-        runSolarBESS.annualCB_BESS(i) = runSolarBESS.annualCB_BESS(i) - costHardwRepUSD_run; %add fixed cost for replacing hardware
+        runSolarBESS.annualCB_BESS(i) = runSolarBESS.annualCB_BESS(i) - costHardwRepUSD_run*(1-redSolarFactor).^i; %add fixed cost for replacing hardware
     end
     %determine if battery replacement
     if mod(i,runSolarBESS.BESSLifetime) == 0
-         runSolarBESS.annualCB_BESS(i) = runSolarBESS.annualCB_BESS(i) - (costBattRepUSD); %add cost of replacing batteries
+         runSolarBESS.annualCB_BESS(i) = runSolarBESS.annualCB_BESS(i) - (costBattRepUSD)*(1-redBESSFactor).^i; %add cost of replacing batteries
     end
 end
 
