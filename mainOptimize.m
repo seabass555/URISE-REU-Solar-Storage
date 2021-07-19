@@ -66,7 +66,7 @@ const.chargeViaSolarThreshold = 50; %percent of solar generation to solar DC pow
 
 %for BESS lifetime and degredation
 const.percBESSDeg = 0; %placeholder for now
-const.isSpecLifetime = 3; %if lifetime is determined from the following options:
+const.isSpecLifetime = 1; %if lifetime is determined from the following options:
     %(0) from capacity degredation
     %(1) user specified number of years
     %(2) from total number of cycles
@@ -97,10 +97,7 @@ const.npCapacity = 90; %MW - nameplate rating of the substation transformer
 %%%%
 const.percLoadGrowth = 5;
 const.percSolarDeg = 0.7; %from NREL 2020 PV cost benchmarks
-const.priceCarbon = 51; %CO2 price per Ton (will have option to select use)
-%convert to price per kg
-const.priceCarbon = const.priceCarbon * (1/1016.04691);
-
+const.priceCarbon = 51/1016.04691; %CO2 price per kg (will have option to select use)
 
 const.isBlackoutAtNP = 1; %option to allow user to have limited overloads
 const.projectLifetime = 30; %years that the solar and BESS system will be used
@@ -109,6 +106,10 @@ const.projectLifetime = 30; %years that the solar and BESS system will be used
 %exponential decay rate as percentage
 const.percCostReductionSolar = 0.9804; %from NREL website
 const.percCostReductionBESS = 2.7848; %from NREL cost predictions (used average for 30 year prediction)
+
+%Solar Investment Tax Credit
+const.percITCSolar = 26;
+
 
 %most of the following values are currently arbitrary
 %instalation costs (USD)
@@ -163,7 +164,7 @@ const.offPeakGenCostPerMWh = 36.66*0.75; %arbitrary
 const.peakTimeStart = 14; %3pm
 const.peakTimeEnd = 20; %9pm
 
-const.r = 0.03; %3 percent interest rate
+const.r = 3; %3 percent interest rate
 
 %check for errors, display input data as load and 1MW solar
 %potential errors: data entered wrong, or as NaN, constants set to wrong
@@ -175,17 +176,17 @@ const.r = 0.03; %3 percent interest rate
 %manual user input as an array matrix
 const.isManualInput = 1; %(1) if user specifies inputs manually into a matrix
 %solar cap
-const.manualSolar = [0, 100, 50, 200, 600];
-const.manualSolarInstUSD = [0, NaN, 450000, 900000, 10000000];
-const.manualSolarOMUSD = [0, NaN, 40, NaN, 10000];
+const.manualSolar = [40, 20];
+const.manualSolarInstUSD = [NaN, NaN];
+const.manualSolarOMUSD = [NaN, NaN];
 %BESS cap
-const.manualBESS = [0, 500, 200, 100, 300, 600, 1000];
-const.manualBESSInstUSD = [0, 10000000, 20000000, 100000, 1000000, 3400000, 9900000000];
-const.manualBESSOMUSD = [0, 100, 200, 300, 400, 500, 600];
+const.manualBESS = [100, 20];
+const.manualBESSInstUSD = [NaN, NaN];
+const.manualBESSOMUSD = [NaN, NaN];
 %substation upgrades
-const.manualSubst = [0, 10, 20, 30, 40, 50, 60, 70, 80, 100];
-const.manualSubstInstUSD = [0, 3E8, 6E8, 7E8, 9E8, 10E8, 12E8, 13E8, 14E8, 15E8];
-const.manualSubstOMUSD = [0, 2E4, 2E4, 2E4, 3E4, 3E4, 5E4, 5E4, 5E4, 5E4];
+const.manualSubst = [25];
+const.manualSubstInstUSD = [NaN];
+const.manualSubstOMUSD = [NaN];
 
 % %determine if manual inputs, all are entered for costs
 % %will be used in cost function to set the cost of the installation if = 1
@@ -234,17 +235,17 @@ else %manual user inputs:
     BESSCapacity = const.manualBESS;
     opt.substUpgrade = const.manualSubst;
 end
-solar_maxi = length(solarCapacity);
-BESS_maxi = length(BESSCapacity);
-upgrade_maxi = length(opt.substUpgrade);
+const.solar_maxi = length(solarCapacity);
+const.BESS_maxi = length(BESSCapacity);
+const.upgrade_maxi = length(opt.substUpgrade);
 
 %compute matricies for solar and BESS
 %assume solar as x-axis, BESS and y-axis
 [opt.solarCapacity, opt.BESSCapacity] = meshgrid(solarCapacity, BESSCapacity);
 
 %initalize the arrays for NPV result from solar and BESS, subst. upgrade
-opt.NPVSolarAndBESS = zeros(BESS_maxi,solar_maxi);
-opt.NPVSubstUpgrade = zeros(upgrade_maxi,1);
+opt.NPVSolarAndBESS = zeros(const.BESS_maxi,const.solar_maxi);
+opt.NPVSubstUpgrade = zeros(const.upgrade_maxi,1);
 
 disp("BESS, Solar data points");
 disp(size(opt.NPVSolarAndBESS));
@@ -253,135 +254,29 @@ disp(length(opt.NPVSubstUpgrade));
 
 %display estimated runtime...
 disp("estimated runtime (sec, min): ");
-estRuntime = 0.0424*(solar_maxi*BESS_maxi+upgrade_maxi)+(4.08e-07*(solar_maxi*BESS_maxi + upgrade_maxi).^2);
+estRuntime = 0.0424*(const.solar_maxi*const.BESS_maxi+const.upgrade_maxi)+(4.08e-07*(const.solar_maxi*const.BESS_maxi + const.upgrade_maxi).^2);
 disp(estRuntime);
 disp(estRuntime/60);
 
-tic
 
 %% run simulation
-%pre-calculate anything that only needs to run once
-%total energy demand for year 1:
-const.energyLoad = sum(const.load,'omitnan')*1; %hour increments
-
-%overloads at original (nameplate capacity with no solar+BESS)
-[const] = calcOverloadsOrig_opt(const);
-%INPUTS: const.load, const.npCapacity, const.time
-%OUTPUTS: const.npOverloadsOrig,const.durationOverloadOrig,const.intensityOverloadOrig,const.timeOverloadOrig,const.isDamagingOrig
-
-% OLD method
-% %revenue from solar MWh of generation and BESS load shifting
-% const.gainsPerMWhSolar = (const.peakGenCostPerMWh + const.offPeakGenCostPerMWh)/2; %average peak/off peak generation cost
-% const.gainsPerMWhBESS = const.peakGenCostPerMWh - const.offPeakGenCostPerMWh;      %assume BESS discharges during peak time, use difference between on and off peak cost of generation
-
-%determine cost of energy generaiton for every hour, in USD/MWh
-const.timeOfDay = zeros(length(const.load),1);
-const.hourCostOfGen = zeros(length(const.load),1);
-for i = 1:length(const.load) %through all hours
-    %determine hour in day
-    if i == 1
-        const.timeOfDay(i) = const.initalTimeOfDay;
-    else
-        const.timeOfDay(i) = const.timeOfDay(i-1) + 1; %increment by 1hr
-    end
-    if const.timeOfDay(i) > 23 %if time is past midnight
-        const.timeOfDay(i) = 0; %set to zero again for next day
-    end
-    %determine if on peak time/cost of generation
-    if const.timeOfDay(i) >= const.peakTimeStart && const.timeOfDay(i) <= const.peakTimeEnd
-        const.hourCostOfGen(i) = const.peakGenCostPerMWh; %on peak price of gen. per MWh
-    else
-        const.hourCostOfGen(i) = const.offPeakGenCostPerMWh; %off peak price of generation per MWh
-    end
-end
+tic
 
 
-% -calculate 30 year NPV for each run, store in opt. , use for loop
-%run simulation for solar+BESS, store variables in runSolarBESS.
-for solar_i = 1:solar_maxi
-    runSolarBESS.solar_i = solar_i;
-    %calculate solar variables, energy, etc.
-    runSolarBESS.sizeSolar = opt.solarCapacity(1,solar_i); %determine size of solar array for the upcoming runs
-    
-    %determine the net load with solar and energy generated by solar
-    [runSolarBESS] = calcLoadWithSolar_opt(const, runSolarBESS);
-    %inputs: const.load, const.solarGen1MW, runSolarBESS.sizeSolar
-    %outputs: runSolarBESS.netLoadSolar,runSolarBESS.solarGen,runSolarBESS.energySolar,runSolarBESS.percSolarPen
-    
-    for BESS_i = 1:BESS_maxi
-        runSolarBESS.BESS_i = BESS_i;
-        %iterate through runs with the same solar capacity but varying BESS
-        runSolarBESS.sizeBESS = opt.BESSCapacity(BESS_i,1); %determine size of BESS for this run
-        
-        %determine energy and power output, net load with BESS
-        %for future - add condition for different BESS algorithms
-        if const.isLoadBasedBESS == 1 %determine type of charge-discharge algorithm
-            [runSolarBESS] = BESSFunc3N_opt(const, runSolarBESS);
-        else
-            [runSolarBESS] = RealBESStFunc_opt(const, runSolarBESS);
-        end
-        %INPUTS: const.time,const.deltaTime,runSolarBESS.netLoadSolar,const.initialEnergyBESS,runSolarBESS.sizeBESS,const.hourPowerCapBESS,const.chargePerc,const.dischargePerc,const.dischargeFactor, const.npCapacity
-        %OUTPUTS: runSolarBESS.powerOutBESS,runSolarBESS.energyBESS,runSolarBESS.energyTotBESS,runSolarBESS.netLoadBESS
-        
-        %determine overloads for the given run
-        [runSolarBESS] = calcOverloadsBESS_opt(const, runSolarBESS);
-        %INPUTS: runSolarBESS.netLoadBESS, const.npCapacity, const.time
-        %OUTPUTS: runSolarBESS.npOverloadsBESS,runSolarBESS.durationOverloadBESS,runSolarBESS.intensityOverloadBESS,runSolarBESS.timeOverloadBESS,runSolarBESS.isDamagingBESS
-    
-        %calculate NPV for the given run at the lifetime of the system
-        [runSolarBESS] = calcCosts2BESS_opt(const, runSolarBESS);
-        %INPUTS: const.energyLoad,runSolarBESS.energySolar,runSolarBESS.energyTotBESS,const.percLoadGrowth,const.percSolarDeg,runSolarBESS.sizeSolar,runSolarBESS.sizeBESS,const.npCapacity,runSolarBESS.durationOverloadBESS,runSolarBESS.isDamagingBESS,const.durationOverloadOrig,const.isDamagingOrig,const.priceCarbon,const.isBlackoutAtNP
-        %OUTPUTS: runSolarBESS.netCO2BESS,runSolarBESS.annualCO2BESS,runSolarBESS.NPV_BESS,runSolarBESS.annualCB_BESS
-        
-        %assign NPV to current position in NPV results matrix
-        opt.NPVSolarAndBESS(BESS_i,solar_i) = runSolarBESS.NPV_BESS(end);
-        
-    end
-end
+%idefity maximum NPV for solar-ESS and substation upgrade
+[const, opt] = runOptimization(const, opt);
 
-for upgrade_i = 1:upgrade_maxi
-    runUpgrade.upgrade_i = upgrade_i;
-    %run simulation for substation upgrade, store vars in runUpgrade.
-    %omit BESS+Solar calculations for these
-    runUpgrade.sizeUpgrade = opt.substUpgrade(upgrade_i);
-    
-    %determine overloads for this run
-    [runUpgrade] = calcOverloadsUpgrade_opt(const, runUpgrade);
-    %INPUTS: const.load, const.npCapacity, runUpgrade.sizeUpgrade, const.time
-    %OUTPUTS: runUpgrade.npOverloadsUpgrade,runUpgrade.durationOverloadUpgrade,runUpgrade.intensityOverloadUpgrade,runUpgrade.timeOverloadUpgrade,runUpgrade.isDamagingUpgrade
-    
-    %calculate NPV after system lifetime for the subst. upgrade
-    [runUpgrade] = calcCosts2Upgrade_opt(const, runUpgrade);
-    %INPUTS: const.energyLoad,runSolarBESS.energySolar,const.percLoadGrowth,const.percSolarDeg,runSolarBESS.sizeSolar,runSolarBESS.sizeBESS,const.npCapacity,runUpgrade.durationOverloadUpgrade,runUpgrade.isDamagingUpgrade,const.durationOverloadOrig,const.isDamagingOrig,const.priceCarbon,const.isBlackoutAtNP
-    %OUTPUTS: runUpgrade.netCO2Upgrade,runUpgrade.annualCO2Upgrade,runUpgrade.NPV_Upgrade,runUpgrade.annualCB_Upgrade
-    
-    %assign current NPV
-    opt.NPVSubstUpgrade(upgrade_i) = runUpgrade.NPV_Upgrade(end);
-end
-
-    %note: may be able to improve program in a few ways
-    %omit BESS+Solar function from substation upgrade calculations
-    %calculate all status-quo costs prior to for loop (e.g. in calcCosts,
-    %overloads, total energy, etc.)
-    %remove calculation of any unused variables, such as adjustedOverloads
-% -identify maximum NPV
-% -idenfity the best case substation upgrade, solar & BESS capacity
-
-
-%DEMO run - arbitrary NPV
-% opt.NPVSolarAndBESS = -((opt.solarCapacity-60).^2 + opt.BESSCapacity.^2);
-%opt.NPVSubstUpgrade = 10 - opt.substUpgrade.^2;
-
-%calculate maximum NPV
-[opt] = calcMaxNPV(opt);
 
 toc
+
 
 %% graph data and return results
 subplot(2,1,1);
 hold on;
 %surf(opt.solarCapacity, opt.BESSCapacity, opt.NPVSolarAndBESS./1000000, 'FaceAlpha', 0.5);
+if const.solar_maxi > 1 && const.BESS_maxi > 1
 mesh(opt.solarCapacity, opt.BESSCapacity, opt.NPVSolarAndBESS./1000000); %will need to add condition for corner cases here
+end
 plot3(opt.optSolar, opt.optBESS, opt.maxNPVBESS/1000000, 'rs', 'MarkerSize', 10);
 %mesh(opt.solarCapacity, opt.BESSCapacity, zeros(size(opt.NPVSolarAndBESS)), 'FaceAlpha', 0.1); %plot zero NPV
 %plot3(solarCapacity,zeros(solar_maxi,1),zeros(solar_maxi,1),'k--');
@@ -449,6 +344,11 @@ runUpgrade.upgrade_i = opt.optUpgrade_i;
 runSolarBESS.sizeSolar = opt.optSolar;
 runSolarBESS.sizeBESS = opt.optBESS;
 
+%override inputs
+% runSolarBESS.sizeSolar = 48;
+% runSolarBESS.sizeBESS = 112;
+% const.isManualInput = 0; %to avoid errors if it is looking for manual cost data
+
 %run load with solar function
 [runSolarBESS] = calcLoadWithSolar_opt(const, runSolarBESS);
 %Run BESS function
@@ -464,6 +364,9 @@ end
 
 %get size of Upgrade
 runUpgrade.sizeUpgrade = opt.optUpgrade;
+
+%manual override to test a specific case
+%runUpgrade.sizeUpgrade = 25;
 
 %determine overloads
 [runUpgrade] = calcOverloadsUpgrade_opt(const, runUpgrade);
