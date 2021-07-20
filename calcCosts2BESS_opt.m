@@ -289,8 +289,8 @@ runSolarBESS.annualCB_BESS = zeros(const.projectLifetime,1);
 redSolarFactor = const.percCostReductionSolar/100;
 redBESSFactor = const.percCostReductionBESS/100;
 
-%determine upfront costs
-upfrontCost = instCostSolarUSD+instCostBESSUSD; %+instCostUpgradeUSD;
+%determine upfront costs - apply ITC for solar
+upfrontCost = instCostSolarUSD*(1-const.percITCSolar/100)+instCostBESSUSD; %+instCostUpgradeUSD;
 %determine total costs after year 1
 runSolarBESS.annualCB_BESS(1) = gainsBESS(1)+gainsSolarGen(1)+gainsOverloads(1)+gainsCarbonCredit(1)-(annualOMSolarUSD*(1-redSolarFactor)+annualOMBESSUSD*(1-redBESSFactor)+annualOMSubstUSD);
 

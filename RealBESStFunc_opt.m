@@ -59,6 +59,11 @@ for i = 1:length(const.time)
         runSolarBESS.powerOutBESS(i) = -dischargePowerCap;
     end
     
+    %check to make sure that the net-load will not go negative
+    if runSolarBESS.netLoadSolar(i) - runSolarBESS.powerOutBESS(i) < 0
+        runSolarBESS.powerOutBESS(i) = runSolarBESS.netLoadSolar(i); %set power output equal to load
+    end
+    
     %calculate change in energy at index
     if runSolarBESS.powerOutBESS(i) < 0 && runSolarBESS.solarGen(i) < -runSolarBESS.powerOutBESS(i) % if batteries are charging AND solar output is NOT enough to cover their charging completely
         deltaEnergyBESS = runSolarBESS.solarGen(i) * const.deltaTime * const.roundTripEfficiency * const.converterEfficiency;
