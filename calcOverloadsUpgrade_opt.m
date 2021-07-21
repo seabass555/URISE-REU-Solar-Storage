@@ -85,6 +85,40 @@ function [runUpgrade] = calcOverloadsUpgrade_opt(const, runUpgrade)
         end
     end
     
+    %determine the total energy of overloads and damaging overloads
+    runUpgrade.energyNPOverload = sum(runUpgrade.npOverloadsUpgrade,'omitnan');
+    runUpgrade.energyDamagingOverload = 0;
+    nOverload = 0;
+    
+    for i = 1:length(runUpgrade.npOverloadsUpgrade)
+        %count which overload this is
+        if i > 1 && (runUpgrade.npOverloadsUpgrade(i) > 0 && runUpgrade.npOverloadsUpgrade(i-1) == 0)
+            nOverload = nOverload + 1;
+        elseif i == 1 && runUpgrade.npOverloadsUpgrade(i) > 0 %corner case-overload at first index
+            nOverload = 1;
+        end
+        
+        %check to see if this overload is damaging, and if so, add to the
+        %energy of damaging overloads, also check to make sure it's ~NaN
+%         if runUpgrade.npOverloadsUpgrade(i) > 0
+%             disp("i/nOverload/npOverloads(i),(i-1)");
+%             disp(i);
+%             disp(nOverload);
+%             disp(runUpgrade.npOverloadsUpgrade(i));
+%             disp(runUpgrade.npOverloadsUpgrade(i-1));
+%         end
+        
+        if nOverload > 0
+            if (runUpgrade.npOverloadsUpgrade(i) > 0 && runUpgrade.isDamagingUpgrade(nOverload) == 1) && ~isnan(runUpgrade.npOverloadsUpgrade(i))
+                %add to the energy
+                %disp("got here");
+                %disp(runUpgrade.sizeUpgrade);
+                %disp(nOverload);
+                runUpgrade.energyDamagingOverload = runUpgrade.energyDamagingOverload + runUpgrade.npOverloadsUpgrade(i)*1;
+            end
+        end
+    end
+    
     %debug
 %     disp("total number of overloads found to be: ");
 %     disp(numOverloads);
@@ -92,5 +126,10 @@ function [runUpgrade] = calcOverloadsUpgrade_opt(const, runUpgrade)
 %     disp(durationOverloads);
 %     disp("intensity of overloads:");
 %     disp(intensityOverloads);
+%       disp("energy of overloads, NP/damaging");
+%       disp(runUpgrade.energyNPOverload);
+%       disp(runUpgrade.energyDamagingOverload);
+
+    %disp("got to end of calcOverloadsUpgrade_opt");
     
 end

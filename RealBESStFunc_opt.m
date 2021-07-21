@@ -52,16 +52,32 @@ for i = 1:length(const.time)
         runSolarBESS.powerOutBESS(i) = -(runSolarBESS.solarGen(i) - (runSolarBESS.sizeSolar * chargeviaSolarFactor));
     end
     
-    %Establish the maximums at which the batteries can charge and discharge
-    if runSolarBESS.powerOutBESS(i) > chargePowerCap
-        runSolarBESS.powerOutBESS(i) = chargePowerCap;
-    elseif runSolarBESS.powerOutBESS(i) < -dischargePowerCap
-        runSolarBESS.powerOutBESS(i) = -dischargePowerCap;
+    %adjust power output to try and reduce ramping in the load (i.e. reduce
+    %duck curve)
+    if i > 1
+        %calculate the slope in the net-load with solar, minus the BESS
+        %power output
+        loadSlope = (runSolarBESS.netLoadSolar(i)-runSolarBESS.powerOutBESS(i)) - (runSolarBESS.netLoadSolar(i-1)-runSolarBESS.powerOutBESS(i-1));
+    else
+        loadSlope = 0;
     end
-    
+    if loadSlope > const.posLoadChangeLim %positive slope, ramping up too much
+        %increase power output to decrease slope
+        runSolarBESS.powerOutBESS(i) = runSolarBESS.powerOutBESS(i) + (loadSlope-const.posLoadChangeLim);
+    elseif loadSlope < const.negLoadChangeLim %negative slope, ramping down too much
+        %decrease power output to increase slope
+        runSolarBESS.powerOutBESS(i) = runSolarBESS.powerOutBESS(i) - (const.negLoadChangeLim-loadSlope);
+    end
     %check to make sure that the net-load will not go negative
     if runSolarBESS.netLoadSolar(i) - runSolarBESS.powerOutBESS(i) < 0
         runSolarBESS.powerOutBESS(i) = runSolarBESS.netLoadSolar(i); %set power output equal to load
+    end
+    %check to make sure power output does not exceed maximum system specs
+    if runSolarBESS.powerOutBESS(i) > dischargePowerCap
+        runSolarBESS.powerOutBESS(i) = dischargePowerCap;
+    end
+    if runSolarBESS.powerOutBESS(i) < -chargePowerCap
+        runSolarBESS.powerOutBESS(i) = -chargePowerCap;
     end
     
     %calculate change in energy at index

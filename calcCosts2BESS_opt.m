@@ -161,10 +161,12 @@ costsOverloads = zeros(const.projectLifetime,1); %cost for proposed system
 if const.isBlackoutAtNP == 0 %in this case, allow limited overloads 
     %use total duration of damaging overloads along with a
     %baseline cost for each damaging overload that occurs
-    totalDurationOverloadOrig = sum(const.durationOverloadOrig.*const.isDamagingOrig,'omitnan'); %total hours of overloads in year 1
+    %old method:
+    %%totalDurationOverloadOrig = sum(const.durationOverloadOrig.*const.isDamagingOrig,'omitnan'); %total hours of overloads in year 1
+    costsEnergyOverloadsOrig = const.costPerMWhOverloadUSD*const.energyDamagingOverloadOrig;
     costsBaselineOverloadsOrig = sum(const.isDamagingOrig,'omitnan')*const.costBaselinePerOverloadUSD;
     %determine year 1 overload costs
-    costsOverloadsOrig(1) = totalDurationOverloadOrig*const.costPerHourOverloadUSD+costsBaselineOverloadsOrig;
+    costsOverloadsOrig(1) = costsEnergyOverloadsOrig+costsBaselineOverloadsOrig;
 
     %determine overload costs for the remainder of the years using proportion to annual energy consuption
     costsOverloadsOrig = costsOverloadsOrig(1).*(annualEnergyDemand./annualEnergyDemand(1));
@@ -172,10 +174,12 @@ if const.isBlackoutAtNP == 0 %in this case, allow limited overloads
   %%%determine overload costs for current system (i.e. solar/storage or upgrade)
     %use total duration of damaging overloads along with a
     %baseline cost for each damaging overload that occurs
-    totalDurationOverloads = sum(runSolarBESS.durationOverloadBESS.*runSolarBESS.isDamagingBESS,'omitnan'); %total hours of overloads in year 1
+    %Old method:
+    %%totalDurationOverloads = sum(runSolarBESS.durationOverloadBESS.*runSolarBESS.isDamagingBESS,'omitnan'); %total hours of overloads in year 1
+    costsEnergyOverloads = const.costPerMWhOverloadUSD*runSolarBESS.energyDamagingOverload;
     costsBaselineOverloads = sum(runSolarBESS.isDamagingBESS,'omitnan')*const.costBaselinePerOverloadUSD;
     %determine year 1 overload costs
-    costsOverloads(1) = totalDurationOverloads*const.costPerHourOverloadUSD+costsBaselineOverloads;
+    costsOverloads(1) = costsEnergyOverloads+costsBaselineOverloads;
 
     %determine overload costs for the remainder of the years using proportion
     costsOverloads = costsOverloads(1).*(annualNetEnergy./annualNetEnergy(1));
@@ -183,20 +187,24 @@ if const.isBlackoutAtNP == 0 %in this case, allow limited overloads
 else
 %%%calculate overload costs assuming blackouts for any overload above np
     %assume all overloads contribute to cost (ignore isDamaging)
-    totalDurationOverloadOrig = sum(const.durationOverloadOrig,'omitnan'); %total hours of overloads in year 1
+    %OLD method
+    %%totalDurationOverloadOrig = sum(const.durationOverloadOrig,'omitnan'); %total hours of overloads in year 1
+    costsEnergyOverloadsOrig = const.costPerMWhOverloadUSD*const.energyNPOverloadOrig;
     costsBaselineOverloadsOrig = length(const.durationOverloadOrig)*const.costBaselinePerOverloadUSD;
     %determine year 1 overload costs
-    costsOverloadsOrig(1) = totalDurationOverloadOrig*const.costPerHourOverloadUSD+costsBaselineOverloadsOrig;
+    costsOverloadsOrig(1) = costsEnergyOverloadsOrig+costsBaselineOverloadsOrig;
 
     %determine overload costs for the remainder of the years using proportion to annual energy consuption
     costsOverloadsOrig = costsOverloadsOrig(1).*(annualEnergyDemand./annualEnergyDemand(1));
     
   %%%determine overload costs for current system (i.e. solar/storage or upgrade)
     %use total duration of all overloads along with a baseline cost per overload
-    totalDurationOverloads = sum(runSolarBESS.durationOverloadBESS,'omitnan'); %total hours of overloads in year 1
+    %OLD method
+    %%totalDurationOverloads = sum(runSolarBESS.durationOverloadBESS,'omitnan'); %total hours of overloads in year 1
+    costsEnergyOverloads = const.costPerMWhOverloadUSD*runSolarBESS.energyNPOverload;
     costsBaselineOverloads = length(runSolarBESS.durationOverloadBESS)*const.costBaselinePerOverloadUSD;
     %determine year 1 overload costs
-    costsOverloads(1) = totalDurationOverloads*const.costPerHourOverloadUSD+costsBaselineOverloads;
+    costsOverloads(1) = costsEnergyOverloads+costsBaselineOverloads;
 
     %determine overload costs for the remainder of the years using proportion
     costsOverloads = costsOverloads(1).*(annualNetEnergy./annualNetEnergy(1));
@@ -219,6 +227,14 @@ gainsBESS(1) = runSolarBESS.yrOneGainsBESS;
 gainsSolarGen = gainsSolarGen(1).*(annualEnergySolar./runSolarBESS.energySolar);
 gainsBESS = gainsBESS(1).*(annualEnergyBESS./runSolarBESS.energyTotBESS);
 
+%determine costs for ramping up/down load too qucikly
+slopeLoad = diff(runSolarBESS.netLoadBESS);
+costRamping = 0;
+for i = 1:length(slopeLoad)
+    if slopeLoad(i) > const.posLoadChangeLim || slopeLoad(i) < const.negLoadChangeLim
+        costRamping = costRamping + abs(slopeLoad(i))*const.rampCostPerMWDiff;
+    end
+end
 
 %%%Determine annual gains from carbon pricing if used
 %%%Assume carbon pricing is a gain provided for reducing emissions compared to original system
@@ -292,13 +308,13 @@ redBESSFactor = const.percCostReductionBESS/100;
 %determine upfront costs - apply ITC for solar
 upfrontCost = instCostSolarUSD*(1-const.percITCSolar/100)+instCostBESSUSD; %+instCostUpgradeUSD;
 %determine total costs after year 1
-runSolarBESS.annualCB_BESS(1) = gainsBESS(1)+gainsSolarGen(1)+gainsOverloads(1)+gainsCarbonCredit(1)-(annualOMSolarUSD*(1-redSolarFactor)+annualOMBESSUSD*(1-redBESSFactor)+annualOMSubstUSD);
+runSolarBESS.annualCB_BESS(1) = gainsBESS(1)+gainsSolarGen(1)+gainsOverloads(1)+gainsCarbonCredit(1)-(annualOMSolarUSD*(1-redSolarFactor)+annualOMBESSUSD*(1-redBESSFactor)+annualOMSubstUSD+costRamping);
 
 
 %run through all years
 for i = 2:const.projectLifetime
     %maintaince costs+overload costs
-    runSolarBESS.annualCB_BESS(i) = gainsBESS(i)+gainsSolarGen(i)+gainsOverloads(i)+gainsCarbonCredit(i)-(annualOMSolarUSD*(1-redSolarFactor).^i+annualOMBESSUSD*(1-redBESSFactor).^i+annualOMSubstUSD);
+    runSolarBESS.annualCB_BESS(i) = gainsBESS(i)+gainsSolarGen(i)+gainsOverloads(i)+gainsCarbonCredit(i)-(annualOMSolarUSD*(1-redSolarFactor).^i+annualOMBESSUSD*(1-redBESSFactor).^i+annualOMSubstUSD+costRamping);
     %check for hardware upgrade
     if mod(i,const.yearsPerHardwRep) == 0
         runSolarBESS.annualCB_BESS(i) = runSolarBESS.annualCB_BESS(i) - costHardwRepUSD_run*(1-redSolarFactor).^i; %add fixed cost for replacing hardware

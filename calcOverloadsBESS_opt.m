@@ -85,6 +85,29 @@ function [runSolarBESS] = calcOverloadsBESS_opt(const, runSolarBESS)
         end
     end
     
+    %determine the total energy of overloads and damaging overloads
+    runSolarBESS.energyNPOverload = sum(runSolarBESS.npOverloadsBESS,'omitnan');
+    runSolarBESS.energyDamagingOverload = 0;
+    nOverload = 0;
+    
+    for i = 1:length(runSolarBESS.npOverloadsBESS)
+        %count which overload this is
+        if i > 1 && (runSolarBESS.npOverloadsBESS(i) > 0 && runSolarBESS.npOverloadsBESS(i-1) == 0)
+            nOverload = nOverload + 1;
+        elseif i == 1 && runSolarBESS.npOverloadsBESS(i) > 0 %corner case-overload at first index
+            nOverload = 1;
+        end
+        
+        %check to see if this overload is damaging, and if so, add to the
+        %energy of damaging overloads, also check to make sure it's ~NaN
+        if nOverload > 0
+            if (runSolarBESS.npOverloadsBESS(i) > 0 && runSolarBESS.isDamagingBESS(nOverload) == 1) && ~isnan(runSolarBESS.npOverloadsBESS(i))
+                %add to the energy
+                runSolarBESS.energyDamagingOverload = runSolarBESS.energyDamagingOverload + runSolarBESS.npOverloadsBESS(i)*1;
+            end
+        end
+    end
+    
     %debug
 %     disp("total number of overloads found to be: ");
 %     disp(numOverloads);
@@ -92,5 +115,8 @@ function [runSolarBESS] = calcOverloadsBESS_opt(const, runSolarBESS)
 %     disp(durationOverloads);
 %     disp("intensity of overloads:");
 %     disp(intensityOverloads);
+%     disp("energy of overloads, np/damaging");
+%     disp(runSolarBESS.energyNPOverload);
+%     disp(runSolarBESS.energyDamagingOverload);
     
 end
