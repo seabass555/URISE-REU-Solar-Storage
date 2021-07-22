@@ -36,15 +36,15 @@ input = input(1:end-1,:); %remove totals (last row)
 %assign arrays from inport data
 const.load = input(:,5); %5th column for load data in MW
 const.solarGen1MW = input(:,9); %solar generation data for 1MW array
-const.timeMat = input(:,1:3); %maxtrix data of the time
-const.time = 1:length(const.timeMat);
+%const.timeMat = input(:,1:3); %maxtrix data of the time
+const.time = 1:length(const.load);
 const.time = const.time'; %time in hours for dataset
 const.initalTimeOfDay = 0; %start at 12am
 const.deltaTime = 1; % time increment IN HOURS
 
 %%%%%%%%%%%%%%%%%%%%%
 %%%%%%%BESS variables
-const.initialEnergyBESS = 0; % MWh initial capacity
+const.initialEnergyBESS = 0; %MW initial capacity
 const.isSpecPower = 0; %if user specifies the power capacity directly (1), otherwise allows it to change based on a set hour duration for maximum power output
 const.chargePowerCap = 60; %MW BESS charge Power Cap
 const.dischargePowerCap = 60; %MW BESS discharge Power Cap
@@ -57,7 +57,7 @@ const.negLoadChangeLim = -10;
 
 
 
-const.isLoadBasedBESS = 0; %(1) if average load based, (0) if time based
+const.isLoadBasedBESS = 1; %(1) if average load based, (0) if time based
 %--For percent of load based charge-discharge algorithm:
 const.chargePerc = 100; %percentage of mean load to charge
 const.dischargePerc = 115; %percentage of mean load to discharge
@@ -225,8 +225,8 @@ const.BESSCapMax = 600;
 const.upgradeMin = 0;
 const.upgradeMax = 100;
 
-const.deltaSolarCap = 5; %10MW difference
-const.deltaBESSCap = 10; %10MWh difference between cases
+const.deltaSolarCap = 20; %10MW difference
+const.deltaBESSCap = 40; %10MWh difference between cases
 const.deltaUpgrade = 1; %difference of 1MW between subst. upgrade cases
 
 %compute arrays: (alternatively, could replace with linspace, and have a
