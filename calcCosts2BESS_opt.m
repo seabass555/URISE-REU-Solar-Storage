@@ -235,6 +235,9 @@ for i = 1:length(slopeLoad)
         costRamping = costRamping + abs(slopeLoad(i))*const.rampCostPerMWDiff;
     end
 end
+%compare costs of ramping to costs in original
+costRamping = costRamping - const.costRampingOrig; %if original ramping is worse, the cost goes negative and becomes a benefit
+
 
 %%%Determine annual gains from carbon pricing if used
 %%%Assume carbon pricing is a gain provided for reducing emissions compared to original system

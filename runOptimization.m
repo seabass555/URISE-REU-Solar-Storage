@@ -12,6 +12,15 @@ function [const, opt] = runOptimization(const, opt)
 %convert interest rate to decimal
 const.r = const.r/100;
 
+%cost of ramping in original system
+slopeLoad = diff(const.load);
+const.costRampingOrig = 0;
+for i = 1:length(slopeLoad)
+    if slopeLoad(i) > const.posLoadChangeLim || slopeLoad(i) < const.negLoadChangeLim
+        const.costRampingOrig = const.costRampingOrig + abs(slopeLoad(i))*const.rampCostPerMWDiff;
+    end
+end
+
 %total energy demand for year 1:
 const.energyLoad = sum(const.load,'omitnan')*1; %hour increments
 

@@ -225,9 +225,9 @@ const.BESSCapMax = 600;
 const.upgradeMin = 0;
 const.upgradeMax = 100;
 
-const.deltaSolarCap = 15; %10MW difference
-const.deltaBESSCap = 30; %10MWh difference between cases
-const.deltaUpgrade = 5; %difference of 1MW between subst. upgrade cases
+const.deltaSolarCap = 5; %10MW difference
+const.deltaBESSCap = 10; %10MWh difference between cases
+const.deltaUpgrade = 1; %difference of 1MW between subst. upgrade cases
 
 %compute arrays: (alternatively, could replace with linspace, and have a
 %total number of test cases specified)
@@ -354,9 +354,9 @@ runSolarBESS.sizeBESS = opt.optBESS;
 runUpgrade.sizeUpgrade = opt.optUpgrade;
 
 %override inputs
-%  runSolarBESS.sizeSolar = 600;
-%  runSolarBESS.sizeBESS = 300;
-%  runUpgrade.sizeUpgrade = 60;
+%runSolarBESS.sizeSolar = 600;
+%runSolarBESS.sizeBESS = 300;
+%runUpgrade.sizeUpgrade = 60;
 % const.isManualInput = 0; %to avoid errors if it is looking for manual cost data
 
 %run simulation for optimal two cases
@@ -368,7 +368,7 @@ runUpgrade.sizeUpgrade = opt.optUpgrade;
 %plotSolarBESSLoad(2,const.load,runSolarBESS.netLoadSolar,runSolarBESS.netLoadBESS,runSolarBESS.solarGen,runSolarBESS.powerOutBESS,0,'Net Loads and Solar, BESS Outputs');
 
 %plotOverloads2(3,const.load,const.npCapacity,const.npOverloadsOrig,const.timeOverloadOrig,const.isDamagingOrig,0,'Baseline Overloads');
-%plotOverloads2(4,runSolarBESS.netLoadBESS,const.npCapacity,runSolarBESS.npOverloadsBESS,runSolarBESS.timeOverloadBESS,runSolarBESS.isDamagingBESS,0,'Overloads w/ Solar and BESS');
+plotOverloads2(4,runSolarBESS.netLoadBESS,const.npCapacity,runSolarBESS.npOverloadsBESS,runSolarBESS.timeOverloadBESS,runSolarBESS.isDamagingBESS,0,'Overloads w/ Solar and BESS');
   
 %plotBESSData(5,runSolarBESS.netLoadBESS,runSolarBESS.powerOutBESS,runSolarBESS.energyBESS,0,'Solar, BESS Outputs');
 
