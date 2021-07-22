@@ -50,10 +50,16 @@ const.chargePowerCap = 60; %MW BESS charge Power Cap
 const.dischargePowerCap = 60; %MW BESS discharge Power Cap
 const.hourPowerCapBESS = 4; %power capacity of BESS expressed as the duration in hours for the BESS to discharge completely
 const.percDoDCap = 95; % user specified maximum discharge of BESS as percent of total capacity, used in BESS function
+%maximum slope in load, for posLoadLim will discharge BESS - for neg will
+%charge
+const.posLoadChangeLim = 10;
+const.negLoadChangeLim = -10;
+
+
 
 const.isLoadBasedBESS = 0; %(1) if average load based, (0) if time based
 %--For percent of load based charge-discharge algorithm:
-const.chargePerc = 115; %percentage of mean load to charge
+const.chargePerc = 100; %percentage of mean load to charge
 const.dischargePerc = 115; %percentage of mean load to discharge
 const.dischargeFactor = 60; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 %--For time based charge-discharge algorithm:
@@ -84,13 +90,11 @@ const.chargeLossFactor = 0.999958904;
 %type and have if-statements to select variables for time to replace, cost
 
 
-
-
-
 %substation overload variables
 const.npCapacity = 90; %MW - nameplate rating of the substation transformer
 %adjustmentFactorMax = 25; %percent maximum tolerable increase above substation rating
 %adjustmentFactor = 0.4; %percent tolerable increase above rating for every percent the 24hr mean capacity factor is below 100%
+
 
 %%%%
 %%costs/optimization parameters
@@ -98,6 +102,8 @@ const.npCapacity = 90; %MW - nameplate rating of the substation transformer
 const.percLoadGrowth = 5;
 const.percSolarDeg = 0.7; %from NREL 2020 PV cost benchmarks
 const.priceCarbon = 51/1016.04691; %CO2 price per kg (will have option to select use)
+const.rampCostPerMWDiff = 5; %cost of every MW/h ramp outside of the bounds specificed in ESS system specs
+
 
 const.isBlackoutAtNP = 1; %option to allow user to have limited overloads
 const.projectLifetime = 30; %years that the solar and BESS system will be used
@@ -154,8 +160,9 @@ const.emissionsPerMWh = 202.8141544; %EIA emission data for natural gas, convert
 
 %Overload costs
 %costPerMWhOverloadUSD = 100+36.66+250; %Costs per MWh overload non-tolerable by substation (USD). Arbitrary, now unused
-const.costPerHourOverloadUSD = 7500; %arbitrary - cost for every hour a non-tolerable overload occurs
-const.costBaselinePerOverloadUSD = 10000; %arbitrary - baseline cost of a damaging overload
+%const.costPerHourOverloadUSD = 7500; %arbitrary - cost for every hour a non-tolerable overload occurs
+const.costPerMWhOverloadUSD = 725; %averag
+const.costBaselinePerOverloadUSD = 200; %arbitrary - baseline cost of a damaging overload
 
 %peak and off peak costs of energy generation (conventional power plant)
 const.peakGenCostPerMWh = 36.66*1.2; %arbitrary
@@ -174,15 +181,15 @@ const.r = 3; %3 percent interest rate
 
 
 %manual user input as an array matrix
-const.isManualInput = 1; %(1) if user specifies inputs manually into a matrix
+const.isManualInput = 0; %(1) if user specifies inputs manually into a matrix
 %solar cap
-const.manualSolar = [40, 20];
+const.manualSolar = [0, 600];
 const.manualSolarInstUSD = [NaN, NaN];
 const.manualSolarOMUSD = [NaN, NaN];
 %BESS cap
-const.manualBESS = [100];
-const.manualBESSInstUSD = [NaN];
-const.manualBESSOMUSD = [NaN];
+const.manualBESS = [100, 20];
+const.manualBESSInstUSD = [NaN, NaN];
+const.manualBESSOMUSD = [NaN, NaN];
 %substation upgrades
 const.manualSubst = [25];
 const.manualSubstInstUSD = [NaN];
@@ -274,7 +281,7 @@ toc
 subplot(2,1,1);
 hold on;
 %surf(opt.solarCapacity, opt.BESSCapacity, opt.NPVSolarAndBESS./1000000, 'FaceAlpha', 0.5);
-if const.solar_maxi > 1 && const.solar_maxi > 1
+if const.solar_maxi > 1 && const.BESS_maxi > 1
 mesh(opt.solarCapacity, opt.BESSCapacity, opt.NPVSolarAndBESS./1000000); %will need to add condition for corner cases here
 end
 plot3(opt.optSolar, opt.optBESS, opt.maxNPVBESS/1000000, 'rs', 'MarkerSize', 10);
@@ -343,35 +350,17 @@ runUpgrade.upgrade_i = opt.optUpgrade_i;
 %get size of solar and BESS
 runSolarBESS.sizeSolar = opt.optSolar;
 runSolarBESS.sizeBESS = opt.optBESS;
-
-%override inputs
-% runSolarBESS.sizeSolar = 48;
-% runSolarBESS.sizeBESS = 112;
-% const.isManualInput = 0; %to avoid errors if it is looking for manual cost data
-
-%run load with solar function
-[runSolarBESS] = calcLoadWithSolar_opt(const, runSolarBESS);
-%Run BESS function
-if const.isLoadBasedBESS == 1 %determine type of charge-discharge algorithm
-    [runSolarBESS] = BESSFunc3N_opt(const, runSolarBESS);
-else
-    [runSolarBESS] = RealBESStFunc_opt(const, runSolarBESS);
-end
-%calculate overloads for solar-BESS
-[runSolarBESS] = calcOverloadsBESS_opt(const, runSolarBESS);
-%run cost calculation for solar-BESS
-[runSolarBESS] = calcCosts2BESS_opt(const, runSolarBESS);
-
 %get size of Upgrade
 runUpgrade.sizeUpgrade = opt.optUpgrade;
 
-%manual override to test a specific case
-%runUpgrade.sizeUpgrade = 25;
+%override inputs
+runSolarBESS.sizeSolar = 600;
+runSolarBESS.sizeBESS = 300;
+runUpgrade.sizeUpgrade = 25;
+% const.isManualInput = 0; %to avoid errors if it is looking for manual cost data
 
-%determine overloads
-[runUpgrade] = calcOverloadsUpgrade_opt(const, runUpgrade);
-%determine costs
-[runUpgrade] = calcCosts2Upgrade_opt(const, runUpgrade);
+%run simulation for optimal two cases
+[runSolarBESS, runUpgrade] = runOptSimulation(const, runSolarBESS, runUpgrade);
 
 %%graph results
 
@@ -384,7 +373,32 @@ runUpgrade.sizeUpgrade = opt.optUpgrade;
 %plotBESSData(5,runSolarBESS.netLoadBESS,runSolarBESS.powerOutBESS,runSolarBESS.energyBESS,0,'Solar, BESS Outputs');
 
 %plotCosts(6,runSolarBESS.annualCO2BESS,runUpgrade.annualCO2Upgrade,runSolarBESS.annualCB_BESS,runUpgrade.annualCB_Upgrade,'Annual Costs in C02','Annual Benefits-Costs in USD');
-plotCosts(7,runSolarBESS.netCO2BESS,runUpgrade.netCO2Upgrade,runSolarBESS.NPV_BESS,runUpgrade.NPV_Upgrade,'Net Costs in C02','Net Present Value in USD');
+%plotCosts(7,runSolarBESS.netCO2BESS,runUpgrade.netCO2Upgrade,runSolarBESS.NPV_BESS,runUpgrade.NPV_Upgrade,'Net Costs in C02','Net Present Value in USD');
+
+figure(8);
+%plot(diff(runSolarBESS.netLoadBESS));
+subplot(2, 1, 1);
+%plot(diff(runSolarBESS.netLoadBESS),'b:','LineWidth',2);
+axis([4167 4188 -15 130]);
+hold on;
+%plot(diff(runSolarBESS.netLoadSolar),'r:','LineWidth',2);
+plot(runSolarBESS.energyBESS,'o');
+plot(runSolarBESS.powerOutBESS,'k');
+plot(runSolarBESS.netLoadBESS,'g-');
+plot(runSolarBESS.netLoadSolar, "r--");
+legend('ESS energy','ESS power out','net load with ESS','net load with solar');
+title('ESS Energy, Net-Load & Solar Net-Load');
+ylabel('Power (MW), Energy (MWh)');
+
+subplot(2, 1, 2);
+plot(diff(runSolarBESS.netLoadBESS),'b:','LineWidth',1.5);
+axis([4167 4188 -15 130]);
+hold on;
+plot(diff(runSolarBESS.netLoadSolar),'r:','LineWidth',1.5);
+plot(diff(const.load),'k:','LineWidth',1.5');
+legend('slope of ESS net load','slope of solar net load','slope of orig. load');
+title('Slope of Net-Load Profiles');
+ylabel('Change-in-Power (MW/h)');
 
 disp("total energy output of solar and BESS");
 disp(runSolarBESS.totEnergyGenSolar);

@@ -85,6 +85,34 @@ function [const] = calcOverloadsOrig_opt(const)
         end
     end
     
+    %determine the total energy of overloads and damaging overloads
+    const.energyNPOverloadOrig = sum(const.npOverloadsOrig,'omitnan');
+    const.energyDamagingOverloadOrig = 0;
+    nOverload = 0;
+    
+    for i = 1:length(const.npOverloadsOrig)
+        %count which overload this is
+        if i > 1 && (const.npOverloadsOrig(i) > 0 && const.npOverloadsOrig(i-1) == 0)
+            nOverload = nOverload + 1;
+        elseif i == 1 && const.npOverloadsOrig(i) > 0 %corner case-overload at first index
+            nOverload = 1;
+        end
+        
+        %check to see if this overload is damaging, and if so, add to the
+        %energy of damaging overloads, also check to make sure it's ~NaN
+        if nOverload > 0
+            if (const.npOverloadsOrig(i) > 0 && const.isDamagingOrig(nOverload) == 1) && ~isnan(const.npOverloadsOrig(i))
+                %add to the energy
+                %disp("got here");
+                %disp(nOverload);
+                const.energyDamagingOverloadOrig = const.energyDamagingOverloadOrig + const.npOverloadsOrig(i)*1;
+            end
+        end
+    end
+    
+    
+    
+    
     %debug
 %     disp("total number of overloads found to be: ");
 %     disp(numOverloads);
