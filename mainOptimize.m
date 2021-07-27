@@ -34,7 +34,7 @@ input = readmatrix('2020DemandandSolar-Sheet1.csv');
 input = input(1:end-1,:); %remove totals (last row)
 
 %assign arrays from inport data
-const.load = input(:,5); %5th column for load data in MW
+const.load = input(:,5)./10; %5th column for load data in MW
 const.solarGen1MW = input(:,9); %solar generation data for 1MW array
 %const.timeMat = input(:,1:3); %maxtrix data of the time
 const.time = 1:length(const.load);
@@ -60,25 +60,25 @@ const.negLoadChangeLim = -10;
 const.isLoadBasedBESS = 1; %(1) if average load based, (0) if time based
 %--For percent of load based charge-discharge algorithm:
 const.chargePerc = 100; %percentage of mean load to charge
-const.dischargePerc = 115; %percentage of mean load to discharge
-const.dischargeFactor = 60; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
+const.dischargePerc = 100; %percentage of mean load to discharge
+const.dischargeFactor = 40; %percentage for how much to bring down load to discharge threshold (0=none, 100=flat)
 %--For time based charge-discharge algorithm:
 const.emerBESS = 30; %percentage of energy capacity left for emergency overloads
-const.startCharge = 0; %time in which batteries will start scheduled charge
-const.endCharge = 7; %time in which batteries will end scheduled charge
+const.startCharge = 22; %time in which batteries will start scheduled charge
+const.endCharge = 16; %time in which batteries will end scheduled charge
 const.startDischarge = 17; %time when batteries will start scheduled discharge
 const.endDischarge = 21; %time when batteries will end scheduled discharge
 const.chargeViaSolarThreshold = 50; %percent of solar generation to solar DC power rating, at which addition generation will be used to charge BESS if possible regardless of time
 
-%for BESS lifetime and degredation
-const.percBESSDeg = 0; %placeholder for now
+%for BESS lifetime and degradation
+const.percBESSDeg = 2; %placeholder for now
 const.isSpecLifetime = 1; %if lifetime is determined from the following options:
     %(0) from capacity degredation
     %(1) user specified number of years
     %(2) from total number of cycles
     %(3) total energy throughput per MWh storage
 const.percMinCapacityBattRep = 80; %user specified degredation (min SOH) as percent of total capacity to get lifetime
-const.yearsPerBattRep = 12; %user specificed lifetime directly in year
+const.yearsPerBattRep = 10; %user specificed lifetime directly in year
 const.maxNumCyclesBattRep = 6000; %number of cycles before storage must be replaced
 const.maxEnergyThruBattRep = 2500; %maximum energy throughput of ESS, per MWh of storage
 %battery efficiency for charging/discharging via grid or solar, charge loss
@@ -89,9 +89,16 @@ const.chargeLossFactor = 0.999958904;
 %ALSO replacing batteries--future note: could add an additional input param. for battery
 %type and have if-statements to select variables for time to replace, cost
 
+% for solar lifetime and degradation
+const.percSolarDeg = 0.7; %from NREL 2020 PV cost benchmarks
+const.isSpecLifetimeSolar = 0;
+     %(0) user specified number of years
+     %(1) from capacity degradation
+const.yearsPerSolarRep = 30 + 1;
+const.percMinCapacitySolarRep = 80;
 
 %substation overload variables
-const.npCapacity = 90; %MW - nameplate rating of the substation transformer
+const.npCapacity = 9; %MW - nameplate rating of the substation transformer
 %adjustmentFactorMax = 25; %percent maximum tolerable increase above substation rating
 %adjustmentFactor = 0.4; %percent tolerable increase above rating for every percent the 24hr mean capacity factor is below 100%
 
@@ -99,11 +106,9 @@ const.npCapacity = 90; %MW - nameplate rating of the substation transformer
 %%%%
 %%costs/optimization parameters
 %%%%
-const.percLoadGrowth = 5;
-const.percSolarDeg = 0.7; %from NREL 2020 PV cost benchmarks
-const.priceCarbon = 51/1016.04691; %CO2 price per kg (will have option to select use)
-const.rampCostPerMWDiff = 5; %cost of every MW/h ramp outside of the bounds specificed in ESS system specs
-
+const.percLoadGrowth = 2;
+const.priceCarbon = 51/1000; %CO2 price per kg (will have option to select use)
+const.rampCostPerMWDiff = 3.8493; %cost of every MW/h ramp outside of the bounds specificed in ESS system specs
 
 const.isBlackoutAtNP = 1; %option to allow user to have limited overloads
 const.projectLifetime = 30; %years that the solar and BESS system will be used
@@ -116,7 +121,6 @@ const.percCostReductionBESS = 2.7848; %from NREL cost predictions (used average 
 %Solar Investment Tax Credit
 const.percITCSolar = 26;
 
-
 %most of the following values are currently arbitrary
 %instalation costs (USD)
 const.instCostSolarPerMWUSD = 994135; %Cost = 994135*capacity(MW) +2.77E6 USD costs per MW for solar instalation
@@ -126,8 +130,8 @@ const.instCostStorageFixedUSD = 312041;
 const.instCostSubstPerMWUSD = 300000; %based on inst. cost for 4MW transformer, USD costs per MW for substation upgrade
 %for co2
 const.instCostSolarPerMWCO2 = 474852.9633; %kg of CO2 costs per MW for solar instalation
-const.instCostStoragePerMWhCO2 = 400000; %arbitrary - kg of CO2 costs per MWh for BESS instalation
-const.instCostSubstPerMWCO2 = 1000000; %arbitrary - kg of CO2 costs per MW for substation upgrade
+const.instCostStoragePerMWhCO2 = 28.4; %arbitrary - kg of CO2 costs per MWh for BESS instalation
+const.instCostSubstPerMWCO2 = 3.78E3; %arbitrary - kg of CO2 costs per MW for substation upgrade
 
 %annual maintaince costs (USD)
 %NOTE, address variable change names
@@ -135,11 +139,11 @@ const.annualOMPerMWSolarUSD = 17460; %From NREL cost benchmark for kWdc of solar
 const.annualOMSolarFixedUSD = 0;
 const.annualOMPerMWhStorageUSD = 8514.175; %from NREL 'Utility Scale Battery Storage' based on 2.5% of inst. costs - annual USD costs per MWh of BESS for maintaince
 const.annualOMStorageFixedUSD = 7801.025; %2.5% inst. cost
-const.annualOMPerMWSubstUSD = 75000; %arbitrary -annual USD costs per MW of substation for maintaince
+const.annualOMPerMWSubstUSD = 15000; %arbitrary -annual USD costs per MW of substation for maintaince
 %for co2
 const.annualOMPerMWSolarCO2 = 43043.12345; %annual co2 costs per MW of solar for maintaince
-const.annualOMPerMWhStorageCO2 = 30000; %arbitrary -annual co2 costs per MW of BESS for maintaince (could do 2.5% of inst.)
-const.annualOMPerMWSubstCO2 = 50000; %arbitrary -annual co2 costs per MW of substation for maintaince
+const.annualOMPerMWhStorageCO2 = 70.795; %arbitrary -annual co2 costs per MW of BESS for maintaince (could do 2.5% of inst.)
+const.annualOMPerMWSubstCO2 = 209.5; %arbitrary -annual co2 costs per MW of substation for maintaince
 
 %power electronics replacement costs for solar and storage (CO2, USD)
 %const.costHardwRepUSD = 10.135E6; %Uses mean cost of BESS function and solar function with capacity=0, USD costs for upgrading electronics for solar-storage
@@ -152,11 +156,9 @@ const.costHardwRepPerMWCO2 = 0; %set to zero, as inverter costs factored into so
 const.costBattRepPerMWhStorageUSD = 68113.4; %20% cited from NREL cost benchmark
 const.costBattRepFixedUSD = 62408.2;
 
-
-
 %kg of CO2 emissions due to generation of electricity that's non-solar
 %emissionsPerMWh = 0.5; %EPA regulation for natural gas emission standards (imperial tons)
-const.emissionsPerMWh = 202.8141544; %EIA emission data for natural gas, converted from lb-CO2/Mbtu to kg/MWh
+const.emissionsPerMWh = 181.0841181; %EIA emission data for natural gas, converted from lb-CO2/Mbtu to kg/MWh
 
 %Overload costs
 %costPerMWhOverloadUSD = 100+36.66+250; %Costs per MWh overload non-tolerable by substation (USD). Arbitrary, now unused
@@ -165,8 +167,8 @@ const.costPerMWhOverloadUSD = 725; %average cost for WTP to stop a blackout
 const.costBaselinePerOverloadUSD = 200; %arbitrary - baseline cost of a damaging overload
 
 %peak and off peak costs of energy generation (conventional power plant)
-const.peakGenCostPerMWh = 36.66*1.2; %arbitrary
-const.offPeakGenCostPerMWh = 36.66*0.75; %arbitrary
+const.peakGenCostPerMWh = 38.493; %arbitrary
+const.offPeakGenCostPerMWh = 36.2934; %arbitrary
 %peak start and end times for the cost of generation
 const.peakTimeStart = 14; %3pm
 const.peakTimeEnd = 20; %9pm
@@ -219,15 +221,15 @@ const.manualSubstOMUSD = [NaN, NaN];
 
 %demo input data, later will be from GUI
 const.solarCapMin = 0;
-const.solarCapMax = 300;
+const.solarCapMax = 5;
 const.BESSCapMin = 0;
-const.BESSCapMax = 600;
+const.BESSCapMax = 20;
 const.upgradeMin = 0;
-const.upgradeMax = 100;
+const.upgradeMax = 5;
 
-const.deltaSolarCap = 20; %10MW difference
-const.deltaBESSCap = 40; %10MWh difference between cases
-const.deltaUpgrade = 1; %difference of 1MW between subst. upgrade cases
+const.deltaSolarCap = 0.5; %10MW difference
+const.deltaBESSCap = 2; %10MWh difference between cases
+const.deltaUpgrade = 0.5; %difference of 1MW between subst. upgrade cases
 
 %compute arrays: (alternatively, could replace with linspace, and have a
 %total number of test cases specified)
