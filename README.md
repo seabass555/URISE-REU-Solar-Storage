@@ -2,9 +2,9 @@
 In this repository you will find the matlab files and data used for the solar-storage group's 2021 URISE project.
 
 Data Files:
-* 2020DemandandSolar-Sheet1.csv contains data used in Case Study 1. Column 5   = load, Column 9 = solar gen. data.
-* MT2020SolarandDemand.csv contains data used in Case Study 2. Column 6 =     load, Column 9 = solar gen. data.
-* note: Additional spreadsheets exist for unused data-sets and data prior to   formating in the later two mentioned .csv files
+* 2020DemandandSolar-Sheet1.csv contains data used in Case Study 1. Column 5 = load, Column 9 = solar gen. data.
+* MT2020SolarandDemand.csv contains data used in Case Study 2. Column 6 = load, Column 9 = solar gen. data.
+* note: Additional spreadsheets exist for unused data-sets and data prior to formating in the later two mentioned .csv files
 
 MATLAB Files (used in backend/optimization code):
 * mainOptimize.m is the "main" file for running a single optimization. It contains all code neccesary to run an optimization outside of the GUI,
@@ -18,7 +18,7 @@ MATLAB Files (used in backend/optimization code):
     * calcCosts2BESS_opt.m is the cost-benefit analysis function for PV-ESS simulations
     * calcOverloadsUpgrade_opt.m is the function to determine overloads for substation upgrade simulations
     * calcCosts2Upgrade_opt.m is the cost-benefit analysis function used for substation upgrade simulations
-    * calcMaxNPV is a function to determine the maximum NPV values for PV-ESS and substation upgrade and identify the optimal sized installations for each based on generated data.
+    * calcMaxNPV.m is a function to determine the maximum NPV values for PV-ESS and substation upgrade and identify the optimal sized installations for each based on generated data.
   * runOptSimulation.m is a function that runs a PV-ESS and substation upgrade simulation after determining optimal parameters.
   * plotSolarBESSLoad.m is a function to graph solar data, ESS discharge, and net-load(s)
   * plotOverloads2.m is a function to graph net-load and overloads
