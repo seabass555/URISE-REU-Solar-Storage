@@ -27,7 +27,8 @@ MATLAB Files (used in backend/optimization code):
   * Note: additional functions/files exist in the repository which correspond to outdated files we used in the inital stages of our research.
 
 Files used for the GUI:
-
+  * CurrentGUI.mlapp contains the current version of the GUI without a formatted 'Home' tab
+  * CurrentGUIHomeTab.mlapp contains the current version of the 'Home' tab. All other content is antiquated. CurrentGUI.mlapp and CurrentGUIHomeTab.mlapp will be combined in the near future
 
 
 Acknowledgement and Disclaimer:
