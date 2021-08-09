@@ -1,5 +1,5 @@
 # URISE-REU-Solar-Storage
-In this repository you will find the save matlab files and data used for the solar-storage group's 2021 URISE project.
+In this repository you will find the matlab files and data used for the solar-storage group's 2021 URISE project.
 
 Data Files:
 * 2020DemandandSolar-Sheet1.csv contains data used in Case Study 1. Column 5   = load, Column 9 = solar gen. data.
@@ -31,5 +31,5 @@ Files used for the GUI:
 
 
 Acknowledgement and Disclaimer:
-The REU students would like to thank the University of Michigan-Dearborn faculty who guided us in our project, namely Profs. Samir Rawadesh, Wencong Su, Lin Van Nieuwstadt, and Antonios Koumpias and UM-Dearborn graduate student Danial Farrugia. We would also like to thank our contacts at DTE, who provided us with industry insight: Michael Witkowski, Vielka Hernandez, Eric Klug, and Christopher Gorman.
-The work was in part supported by the U.S. National Science Foundation under Award #1757522. Any opinions, findings and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
+* The REU students would like to thank the University of Michigan-Dearborn faculty who guided us in our project, namely Profs. Samir Rawadesh, Wencong Su, Lin Van Nieuwstadt, and Antonios Koumpias and UM-Dearborn graduate student Danial Farrugia. We would also like to thank our contacts at DTE, who provided us with industry insight: Michael Witkowski, Vielka Hernandez, Eric Klug, and Christopher Gorman.
+* The work was in part supported by the U.S. National Science Foundation under Award #1757522. Any opinions, findings and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
